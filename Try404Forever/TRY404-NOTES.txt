@@ -1,0 +1,9 @@
+Try404 Forever — local test build
+
+Based on OneForAll by Smoergi and contributors, GPL-3.0-or-later. Third-party licenses and original notices are included. This is an unofficial modification; the addon folder was renamed to Try404Forever while the internal SavedVariables names remain for code compatibility. Settings files are new under the renamed addon.
+
+Supported interface languages: zhCN and zhTW; select based on the game client on fresh install, with English fallback and manual language selection. zhTW is the reviewed project translation; zhCN interface strings were automatically converted from zhTW and require terminology review. Simplified names are based on QuestieDB c1b50fe and ambiguous matches were excluded; client names remain preferred.
+
+The convenience options default off for fresh settings, except controls that reflect the player's own game CVars (these are intentionally left unchanged). User choices may be saved later. Equipment valuation tooltip is a convenience setting, so it starts off and may be enabled manually.
+
+Icon: original generated fantasy compass and book; local image generation. Keep original project and third-party attributions. In-game tests for loading, asset rendering, locale, defaults, game functions and EllesmereUI coexistence remain pending.

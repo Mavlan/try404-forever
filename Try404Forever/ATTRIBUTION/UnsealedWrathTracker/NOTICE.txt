@@ -1,0 +1,22 @@
+Unsealed Wrath Tracker - credits and third-party material
+
+Seal rank spell IDs
+  The seal spell IDs in UnsealedWrathTracker.lua (SEAL_RANKS) come from the
+  WoW Forever rank data published by talentsforever.com
+  (https://talentsforever.com/data.json), licensed under Creative Commons
+  Attribution 4.0 International (https://creativecommons.org/licenses/by/4.0/),
+  as compiled in the addon "Pally Seal Cooldowns" by Colby.
+  Changes: the IDs are grouped by seal and used to recognize seal casts and to
+  filter Blizzard's native aura display. No endorsement by talentsforever.com,
+  Colby or Blizzard is implied.
+
+Alert sounds
+  The .wav files in the sounds folder come from "Pally Seal Cooldowns" by Colby
+  (MIT License). See sounds/NOTICE.txt for the full license text.
+
+Code adapted from Pally Seal Cooldowns (by Colby, MIT License)
+  Minimap.lua (the minimap button) and the seal display in Native.lua (drawing
+  the seal icon and countdown through Blizzard's AuraContainer API, including
+  the countdown formatter) are adapted from Pally Seal Cooldowns. They are used
+  under the MIT License; the full license text, which applies to these parts as
+  well as to the sounds, is in sounds/NOTICE.txt.

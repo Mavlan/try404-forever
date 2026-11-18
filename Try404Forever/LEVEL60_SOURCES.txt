@@ -1,0 +1,15 @@
+Try404 Level 60 guide — sources and scope, checked 2026-11-17
+
+The guide text is independently written and summarizes several sources. It does
+not reproduce the full text of any third-party guide. Quest names and objectives
+in the Onyxia tracker come from QuestieDB Forever, GPL-3.0; see
+THIRD_PARTY_LICENSES.txt. Quest chains and coordinates are the existing addon
+data and should be checked in the live game.
+
+Reference reading:
+https://conquestcapped.com/guides/wow-forever/wow-forever-what-to-do-at-60/
+https://www.altgearer.com/forever/gearing/
+https://www.wowhead.com/forever/guide/classes/paladin/retribution/talent-builds-pve-dps
+
+Availability, coordinates, PvP, class balance, rewards and costs can change.
+Current in-game quests, item tooltips and trainer prices take precedence.

@@ -1,0 +1,35 @@
+TRY404 source and attribution notes — 2026-11-19
+
+Upstream OneForAll: Copyright (C) 2026 Smoergi and contributors.
+Source: https://github.com/smoergi/OneForAll_Forever
+Baseline: 2d59e1d89381f584543b0d4d3e61e2b46b3af8bc (OneForAll 6.2.11).
+TRY404 is a modified, independently maintained version. See README.txt for
+our changes and dates; GPL-3.0-or-later applies to OneForAll-derived code.
+
+The installed addon contains its Lua, XML and configuration source files.
+Generated data files identify upstream inputs and generating tools in their
+comments. The upstream baseline repository does not include a tools/ tree;
+we have not independently verified availability of all generation scripts
+or redistribution rights for all upstream data sources. See
+DUNGEON_DATA_SOURCES.txt, THIRD_PARTY_LICENSES.txt and LEVEL60_SOURCES.txt.
+
+Data/DungeonMaps.lua contains layout data derived through OneForAll from
+Forever Simple World Map 0.30.2 by Tarolg, identified in upstream's notice as
+MIT. The MIT notice is retained in THIRD_PARTY_LICENSES.txt. Upstream says it
+had the author's agreement; that is not a claim of separate permission to us.
+The newer separately licensed Blackfathom Deeps room layout is not included.
+The room images referred to are game-client minimap assets. Some boss pins
+are attributed upstream to foreverchanges.pro; their reuse terms are not
+independently verified. The three ls_*.tga images originate in the upstream
+6.2.10/6.2.11 baseline; their independent provenance remains to be checked.
+
+We excluded 111 legacy dungeon images carried over unchanged from OneForAll
+6.2.9: the current DUNGEON_ART table is empty and 6.2.11 uses client loading
+screen assets or three ls_*.tga files instead. Game-client assets remain the
+property of their respective rightsholders; this notice grants no rights to
+those materials. Other third-party sources retain their separate terms.
+
+SealGlow.lua adapts an aura display approach from Unsealed Wrath Tracker
+3.5.0 by KING (MIT). See SEAL-GLOW-LICENSE.txt and ATTRIBUTION/UnsealedWrathTracker/
+for the retained upstream notices, including third-party notices. Reproduced
+upstream notices may describe components, such as sounds, not included here.
