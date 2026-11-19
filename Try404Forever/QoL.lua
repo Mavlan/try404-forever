@@ -1051,6 +1051,55 @@ do
     migrated = not again
   end
   QoL._migrateBuffs = migrateBuffs -- tests
+  -- Follow the player's own long-duration Paladin blessing. Keep the reminder's
+  -- threshold while updating its spell, so the card casts the current blessing.
+  -- An aura from another Paladin is not evidence of our own choice.
+  local function followOwnBlessing()
+    if inCombat() or not UnitClass or select(2, UnitClass("player")) ~= "PALADIN" then return end
+    local get = type(C_UnitAuras) == "table" and C_UnitAuras.GetAuraDataByIndex
+    if not get then return end
+    local names = {}
+    for _, id in ipairs({19740, 19742, 20217, 20911, 25782, 25894, 25898, 25899}) do
+      local ok, n = pcall(function()
+        return C_Spell and C_Spell.GetSpellName and C_Spell.GetSpellName(id) or (GetSpellInfo and GetSpellInfo(id))
+      end)
+      if ok and type(n) == "string" and not FLT.IsSecret(n) then names[n] = true end
+    end
+    local list, tracked, count = buffList(), nil, 0
+    for name in pairs(list) do
+      if names[name] then tracked, count = name, count + 1 end
+    end
+    -- Multiple explicitly configured blessings retain their independent meaning.
+    if count ~= 1 then return end
+    for i = 1, 40 do
+      local ok, aura = pcall(get, "player", i, "HELPFUL")
+      if not ok or not aura then return end
+      local name, source, id = aura.name, aura.sourceUnit, aura.spellId
+      if FLT.IsSecret(name, source) then return end
+      if type(name) == "string" and names[name] and type(source) == "string" then
+        local own = source == "player"
+        if not own and UnitIsUnit then
+          local sameOK, same = pcall(UnitIsUnit, source, "player")
+          own = sameOK and not FLT.IsSecret(same) and same == true
+        end
+        if own and name ~= tracked and not list[name] then
+          list[name], list[tracked] = list[tracked], nil
+          local ids = buffIDs()
+          ids[name], ids[tracked] = (not FLT.IsSecret(id) and type(id) == "number") and id or nil, nil
+          buffSeen[name], buffSeen[tracked] = buffSeen[tracked], nil
+          buffDur[name], buffDur[tracked] = nil, nil
+          buffExp[name], buffExp[tracked] = nil, nil
+          snoozed[name], snoozed[tracked] = nil, nil
+          renewed[name], renewed[tracked] = nil, nil
+          wasDue[name], wasDue[tracked] = nil, nil
+          local d = db()
+          if d and d.buffIcons then d.buffIcons[tracked] = nil end
+          return
+        elseif own then return end
+      end
+    end
+  end
+  QoL._followOwnBlessing = followOwnBlessing -- tests
   checkBuffs = function()
     buffToken = buffToken + 1 -- an older timer is no longer needed
     -- the buffs seen on this character are kept over logging out (6.2.1, user 08.11. "A": a buff that ran out while
@@ -1063,6 +1112,7 @@ do
       for n in pairs(buffSeen) do if buffList()[n] == nil then buffSeen[n] = nil end end -- no longer watched
     end
     if not migrated and not inCombat() then migrateBuffs() end
+    followOwnBlessing()
     local list = buffList()
     for i = #due, 1, -1 do due[i] = nil end
     if QoL.Get("buffReminder") and next(list) then
