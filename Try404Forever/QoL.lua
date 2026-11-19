@@ -1185,6 +1185,7 @@ do
         if type(n) == "string" and n ~= "" then name = n .. "@" .. hand end
       end)
       buffList()[name] = math.max(5, math.min(3600, math.floor(tonumber(sec) or 30)))
+      buffSeen[name] = true -- explicitly tracking a missing enchant should remind immediately
       pcall(function()
         local iid = C_Item and C_Item.GetItemInfoInstant and C_Item.GetItemInfoInstant(item) or (GetItemInfoInstant and GetItemInfoInstant(item))
         if iid then buffIDs()[name] = "i" .. iid end
@@ -1200,6 +1201,7 @@ do
       if type(info) == "table" and info.spellID then buffIDs()[name] = info.spellID end
     end)
     buffList()[name] = math.max(5, math.min(3600, math.floor(tonumber(sec) or 30)))
+    buffSeen[name] = true -- an explicitly added missing buff should not require an initial cast
     checkBuffs()
     return name
   end
