@@ -458,7 +458,7 @@ local function getRow(f, i)
     local t = self.trainer
     if not (t and FLT.ShowOnMap) then return end
     local nm = FLT.Name and FLT.Name(t.name) or t.name
-    FLT:ShowOnMap({ mapID = t.map, x = t.x, y = t.y, name = t.quest and string.format(L["%s (quest: %s)"], t.name, t.quest)
+    FLT:ShowOnMap({ mapID = t.map, x = t.x, y = t.y, name = t.quest and string.format(L["%s (quest: %s)"], nm, FLT.Name and FLT.Name(t.quest) or t.quest)
       or string.format(t.pet and L["%s (Pet Trainer)"] or L["%s (Weapon Master)"], nm) })
   end)
   r:SetScript("OnEnter", function(self)
@@ -467,7 +467,7 @@ local function getRow(f, i)
       GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:AddLine(L[c.milestone], 1, 0.82, 0)
       if c.finished then GameTooltip:AddLine(L["Done"], 0.35, 1, 0.45)
       elseif q then
-        GameTooltip:AddLine(string.format(c.current and L["In your quest log: %s"] or (c.own and L["Next quest: %s"] or L["First quest: %s"]), q.name), 1, 1, 1, true)
+        GameTooltip:AddLine(string.format(c.current and L["In your quest log: %s"] or (c.own and L["Next quest: %s"] or L["First quest: %s"]), FLT.Name and FLT.Name(q.name) or q.name), 1, 1, 1, true)
         if q.giver and not c.current then GameTooltip:AddLine(string.format(L["Starts at %s"], q.giver), 1, 1, 1, true) end
         if (q.req or 0) > 0 then GameTooltip:AddLine(string.format(L["From level %d"], q.req), 0.8, 0.8, 0.8) end
       end

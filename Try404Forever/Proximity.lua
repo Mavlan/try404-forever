@@ -222,7 +222,7 @@ function FLT:ShowAlert(opts)
   local f = createAlertFrame()
   f.book = nil
   f.snoozeButton:Hide()
-  f.eyebrow:SetText(opts.eyebrow or "ONEFORALL")
+  f.eyebrow:SetText(opts.eyebrow or "TRY404 GUIDE")
   FLT.SetTex(f.icon, opts.icon or "Interface\\Icons\\INV_Misc_QuestionMark")
   f.title:SetText(opts.title or "")
   f.where:SetText(opts.where or "")

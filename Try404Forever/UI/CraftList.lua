@@ -321,7 +321,7 @@ local function itemName(id, fallback)
       C_Timer.After(1, function() namePending = nil; if refresh then refresh() end end)
     end
   end
-  return n or fallback or (L["Item"] .. " " .. id), q
+  return (FLT.ItemName and FLT.ItemName(id, fallback)) or n or fallback or (L["Item"] .. " " .. id), q
 end
 local function qcolor(q)
   local c = ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[q or 1]
@@ -384,7 +384,7 @@ local function newRow()
   b.mapBtn = UI.GoldButton(b, "", 18, 18, UI.ASSET_ROOT .. "icon_map"); b.mapBtn:SetPoint("RIGHT", b.c3, "LEFT", -4, 0)
   b.mapBtn:SetScript("OnClick", function(self)
     local v = CL.NearestVendor(self.id)
-    if v and FLT.ShowOnMap then FLT:ShowOnMap({ mapID = v[3], x = v[4], y = v[5], name = v[1] }) end
+    if v and FLT.ShowOnMap then FLT:ShowOnMap({ mapID = v[3], x = v[4], y = v[5], name = (FLT.Name and FLT.Name(v[1]) or v[1]) }) end
   end)
   b.mapBtn:SetScript("OnEnter", function(self)
     local v = CL.NearestVendor(self.id)
@@ -392,7 +392,7 @@ local function newRow()
     if v then
       local info = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(v[3])
       GameTooltip:SetText(L["Nearest vendor"], GOLD[1], GOLD[2], GOLD[3])
-      GameTooltip:AddLine((FLT.NM and FLT.NM(v[1]) or v[1]) .. (info and info.name and (", " .. info.name) or ""), 1, 1, 1)
+      GameTooltip:AddLine((FLT.Name and FLT.Name(v[1]) or v[1]) .. (info and info.name and (", " .. info.name) or ""), 1, 1, 1)
     else GameTooltip:SetText(L["Sold by vendors"]) end
     GameTooltip:Show()
   end)
@@ -576,7 +576,7 @@ local function sendToAuctionator()
     FLT.Msg(ok and L["Shopping list \"OneForAll Crafting List\" is in Auctionator (Shopping tab)."] or L["Auctionator did not take the list (open the auction house once, then try again)."])
     if ok and missing > 0 then FLT.Msg(string.format(L["%d materials could not be added yet (item data still loading) - send the list again."], missing)) end
   end
-  if #items > 0 then SU.SendToAuctionator({ ah = items }, "OneForAll Crafting List", msg) else msg(false, 0) end
+  if #items > 0 then SU.SendToAuctionator({ ah = items }, "Try404 Crafting List", msg) else msg(false, 0) end
 end
 
 local function create()

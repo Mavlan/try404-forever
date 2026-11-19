@@ -143,7 +143,7 @@ function FLT:CreateMinimapButton()
 
   button:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-    GameTooltip:AddLine(FLT.DISPLAY_NAME or "OneForAll", 1, 0.82, 0)
+    GameTooltip:AddLine(FLT.DISPLAY_NAME or "Try404 Guide", 1, 0.82, 0)
     GameTooltip:AddLine(L["Left-click: Open / close"], 1, 1, 1)
     GameTooltip:AddLine(L["Shift-right-click: Crafting List"], 1, 1, 1)
     GameTooltip:AddLine(L["Alt-right-click: last Skill-Up guide"], 1, 1, 1)
@@ -157,10 +157,10 @@ function FLT:CreateMinimapButton()
   if type(AddonCompartmentFrame) == "table" and type(AddonCompartmentFrame.RegisterAddon) == "function" and not FLT.compartmentAdded then
     FLT.compartmentAdded = true
     pcall(AddonCompartmentFrame.RegisterAddon, AddonCompartmentFrame, {
-      text = FLT.DISPLAY_NAME or "OneForAll", icon = "Interface\\AddOns\\Try404Forever\\Assets\\try404_square", notCheckable = true,
+      text = FLT.DISPLAY_NAME or "Try404 Guide", icon = "Interface\\AddOns\\Try404Forever\\Assets\\try404_square", notCheckable = true,
       func = function() if FLT.ToggleUI then FLT:ToggleUI() end end,
       funcOnEnter = function(b)
-        GameTooltip:SetOwner(b, "ANCHOR_LEFT"); GameTooltip:AddLine(FLT.DISPLAY_NAME or "OneForAll", 1, 0.82, 0)
+        GameTooltip:SetOwner(b, "ANCHOR_LEFT"); GameTooltip:AddLine(FLT.DISPLAY_NAME or "Try404 Guide", 1, 0.82, 0)
         GameTooltip:AddLine(L["Click: Open / close"], 1, 1, 1); GameTooltip:Show()
       end,
       funcOnLeave = function() GameTooltip:Hide() end,
@@ -184,7 +184,7 @@ function FLT.RegisterLDBIcon()
   if not (loaded and loaded("Leatrix_Plus")) or type(LibStub) ~= "table" then return false end
   local LDB, LDBI = LibStub("LibDataBroker-1.1", true), LibStub("LibDBIcon-1.0", true)
   if not (LDB and LDBI and LDB.NewDataObject and LDBI.Register) then return false end
-  local obj = LDB:NewDataObject("OneForAll", {
+  local obj = LDB:NewDataObject("Try404Guide", {
     type = "launcher", icon = "Interface\\AddOns\\Try404Forever\\Assets\\try404_square",
     OnClick = function(_, mouse)
       if mouse == "RightButton" then
@@ -193,7 +193,7 @@ function FLT.RegisterLDBIcon()
       elseif FLT.ToggleUI then FLT:ToggleUI() end
     end,
     OnTooltipShow = function(tt)
-      tt:AddLine(FLT.DISPLAY_NAME or "OneForAll", 1, 0.82, 0)
+      tt:AddLine(FLT.DISPLAY_NAME or "Try404 Guide", 1, 0.82, 0)
       tt:AddLine(L["Left-click: Open / close"], 1, 1, 1)
       tt:AddLine(L["Shift-right-click: Crafting List"], 1, 1, 1)
       tt:AddLine(L["Alt-right-click: last Skill-Up guide"], 1, 1, 1)
@@ -202,7 +202,7 @@ function FLT.RegisterLDBIcon()
   if not obj then return false end
   if type(OneForAllDB) ~= "table" then return false end
   OneForAllDB.ldbIcon = OneForAllDB.ldbIcon or {}
-  if not pcall(LDBI.Register, LDBI, "OneForAll", obj, OneForAllDB.ldbIcon) then return false end
+  if not pcall(LDBI.Register, LDBI, "Try404Guide", obj, OneForAllDB.ldbIcon) then return false end
   FLT.ldbIcon = LDBI
   return LDBI
 end

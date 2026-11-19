@@ -7,7 +7,7 @@ local L = FLT.L or setmetatable({}, { __index = function(_, k) return k end }) -
 local UI = {}
 FLT.UI = UI
 
-UI.DISPLAY_NAME = FLT.DISPLAY_NAME or "OneForAll"
+UI.DISPLAY_NAME = FLT.DISPLAY_NAME or "Try404 Guide"
 UI.ASSET_ROOT = FLT.ASSET_ROOT or ("Interface\\AddOns\\" .. ADDON .. "\\Assets\\")
 local ASSET_ROOT = UI.ASSET_ROOT
 

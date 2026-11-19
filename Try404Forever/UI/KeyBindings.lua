@@ -35,8 +35,8 @@ function OneForAll_Binding(key)
 end
 
 local function names()
-  _G.BINDING_HEADER_ONEFORALL = "Try404 Forever"
-  _G.BINDING_NAME_ONEFORALL_WINDOW = "Try404 Forever"
+  _G.BINDING_HEADER_ONEFORALL = "Try404 Guide"
+  _G.BINDING_NAME_ONEFORALL_WINDOW = "Try404 Guide"
   for key, label in pairs(TABS) do _G["BINDING_NAME_ONEFORALL_TAB_" .. key:upper()] = L[label] end
   _G.BINDING_NAME_ONEFORALL_CRAFTLIST = L["Crafting List"]
   _G.BINDING_NAME_ONEFORALL_SKILLUP = L["Skill-Up Helper"]

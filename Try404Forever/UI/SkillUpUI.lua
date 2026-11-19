@@ -50,7 +50,7 @@ local function itemName(id)
     if C_Item and C_Item.RequestLoadItemDataByID then pcall(C_Item.RequestLoadItemDataByID, id) end
     if C_Timer then waitForNames() end
   end
-  return n or (L["Item"] .. " " .. id)
+  return (FLT.ItemName and FLT.ItemName(id)) or n or (L["Item"] .. " " .. id)
 end
 local function recipeName(r) return FLT.RecipeName and FLT.RecipeName(r) or r.n end
 local function NM(s) return FLT.Name and FLT.Name(s) or s end

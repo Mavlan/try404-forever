@@ -405,17 +405,17 @@ render = function()
   popup.auto:SetChecked(s.popup)
   if popup.TitleText and not testMode then popup.TitleText:SetText(L["OneForAll - Share dungeon quests"]) end
   if testMode then
-    popup.sub:SetText((currentDungeon and currentDungeon.name or "?") .. ": " .. L["test mode - nothing is shared."])
+    popup.sub:SetText((currentDungeon and (FLT.DungeonName and FLT.DungeonName(currentDungeon.name) or currentDungeon.name) or "?") .. ": " .. L["test mode - nothing is shared."])
   elseif #candidates == 0 then
     popup.sub:SetText(L["All shareable quests have been shared."])
   else
-    popup.sub:SetText(currentDungeon and (currentDungeon.name .. ": " .. L["quests your group members can still accept."]) or "")
+    popup.sub:SetText(currentDungeon and ((FLT.DungeonName and FLT.DungeonName(currentDungeon.name) or currentDungeon.name) .. ": " .. L["quests your group members can still accept."]) or "")
   end
   local shown = math.min(#candidates, MAX_ROWS)
   for i = 1, MAX_ROWS do
     local row, c = rows[i], candidates[i]
     if i <= shown then
-      row.name:SetText(c.quest.name or (L["Quest"] .. " " .. tostring(c.quest.id)))
+      row.name:SetText((FLT.Name and FLT.Name(c.quest.name) or c.quest.name) or (L["Quest"] .. " " .. tostring(c.quest.id)))
       row.info:SetText(describe(c))
       row.button.candidate = c
       if #c.missing > 0 then row.button:Enable() else row.button:Disable() end

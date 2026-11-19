@@ -20,7 +20,7 @@ local function sdb()
   return OneForAllDB.skillUp
 end
 local function money(c) if FLT.QoL and FLT.QoL.Money then return FLT.QoL.Money(math.floor((c or 0) + 0.5)) end return tostring(c) end
-local function itemName(id) local n = GetItemInfo and GetItemInfo(id); return n or (L["Item"] .. " " .. id) end
+local function itemName(id) local n = GetItemInfo and GetItemInfo(id); return (FLT.ItemName and FLT.ItemName(id)) or n or (L["Item"] .. " " .. id) end
 local function recipeName(r) return FLT.RecipeName and FLT.RecipeName(r) or r.n end
 
 function UI.CreateProfitPage(parent)

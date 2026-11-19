@@ -205,12 +205,29 @@ local function setName(s)
   if c and c.n and (c.n:find("[\128-\255]") or localized == s.n) then return c.n end
   return localized
 end
--- source texts from the data: "Crafted: Tailoring" / "Quest: ..." translated, "Dungeon - Boss" as it is (for now)
+-- Keep the English keys for filtering and navigation; translate only the displayed label.
+local function sectionText(raw)
+  if type(raw) ~= "string" then return raw end
+  local translated = L[raw]
+  if translated ~= raw then return translated end
+  return (raw:gsub("[^,]+", function(part)
+    local leading, name, trailing = part:match("^(%s*)(.-)(%s*)$")
+    return leading .. ((FLT.DungeonName and FLT.DungeonName(name)) or (FLT.Name and FLT.Name(name)) or name) .. trailing
+  end))
+end
 local function sourceText(src)
+  if type(src) ~= "string" then return src end
   local prof = src:match("^Crafted: (.+)$")
   if prof then return string.format(L["Crafted: %s"], L[prof]) end
   local q = src:match("^Quest: (.+)$")
-  return q and string.format(L["Quest: %s"], q) or src
+  if q then return string.format(L["Quest: %s"], (FLT.Name and FLT.Name(q)) or q) end
+  local dungeon, boss = src:match("^(.-) %- (.+)$")
+  if dungeon then
+    local dn = sectionText(dungeon)
+    local bn = boss == "trash mobs" and L["Trash"] or ((FLT.Name and FLT.Name(boss)) or boss)
+    return dn .. " - " .. bn
+  end
+  return sectionText(src)
 end
 -- item ranks use 0-7 (4 = Friendly); the client's standingID is 1-8
 local function rankReached(rank, st) return st and (st - 1) >= rank end
@@ -231,7 +248,7 @@ local function sourceAction(src)
   return function()
     if FLT.OpenPanel then FLT:OpenPanel("dungeons") end
     if UI.OpenDungeon then UI.OpenDungeon(d, (not src:find("^Quest:")) and boss or nil) end
-  end, d.name
+  end, sectionText(d.name)
 end
 
 local function newText(parent, template, w, color)
@@ -478,7 +495,7 @@ local function createQuestView(body)
           if inf then qlv, obj = strsplit("|", inf, 2) end
           if q.accessStep then qlv, obj = tostring(q.accessStep.level or ""), q.objective or "" end
           local lvTxt = tonumber(qlv) and string.format(L["Level %d"], tonumber(qlv)) or ""
-          r.obj:SetText((obj and obj ~= "" and obj or "-") .. (lvTxt ~= "" and ("\n|cff9d9d9d" .. lvTxt .. "|r") or ""))
+          r.obj:SetText((obj and obj ~= "" and (FLT.Name and FLT.Name(obj) or obj) or "-") .. (lvTxt ~= "" and ("\n|cff9d9d9d" .. lvTxt .. "|r") or ""))
           h = 92 + math.max(14, r.obj:GetStringHeight() or 14) + 8
         end
         r:SetHeight(h); y = y - h - 3
@@ -606,7 +623,7 @@ local function createArmoryPanel(parent)
   otherB:SetScript("OnEnter", function(self)
     local pick = tabPick[current]
     if type(pick) ~= "string" then return end
-    GameTooltip:SetOwner(self, "ANCHOR_BOTTOM"); GameTooltip:SetText(L[pick]); GameTooltip:Show()
+    GameTooltip:SetOwner(self, "ANCHOR_BOTTOM"); GameTooltip:SetText(sectionText(pick)); GameTooltip:Show()
   end)
   otherB:SetScript("OnLeave", function() GameTooltip:Hide() end)
   local otherArrow = otherB:CreateTexture(nil, "OVERLAY"); otherArrow:SetSize(12, 12); otherArrow:SetPoint("RIGHT", -8, 0)
@@ -648,7 +665,7 @@ local function createArmoryPanel(parent)
     end
     local pick = tabPick[current]
     local isOther = type(pick) == "string"
-    otherB:SetLabel(isOther and L[pick] or L["Other Sets"]); otherB:SetActive(isOther)
+    otherB:SetLabel(isOther and sectionText(pick) or L["Other Sets"]); otherB:SetActive(isOther)
     otherB:SetShown(tabs ~= nil and #otherSubs(current) > 0)
     otherB:ClearAllPoints(); otherB:SetPoint("LEFT", tabButtons[tabs and #tabs or 1], "RIGHT", 10, 0)
   end
@@ -663,8 +680,9 @@ local function createArmoryPanel(parent)
     for _, sub in ipairs(otherSubs(current)) do
       local subs = { [sub] = true }
       local dim = notYet(current, subs)
-      opts[#opts + 1] = { key = sub, label = dim and ("|cff9d9d9d" .. L[sub] .. "  " .. L["(not in Forever yet)"] .. "|r") or L[sub] }
-      longest = math.max(longest, #L[sub] + (dim and 20 or 0))
+      local label = sectionText(sub)
+      opts[#opts + 1] = { key = sub, label = dim and ("|cff9d9d9d" .. label .. "  " .. L["(not in Forever yet)"] .. "|r") or label }
+      longest = math.max(longest, #label + (dim and 20 or 0))
     end
     -- wide enough for the longest name (the list was narrower than its text, user 22.10.)
     UI.OpenDropDown(self, opts, tabPick[current], function(k) tabPick[current] = k; paintTabs(); if refreshSets then refreshSets() end end,
@@ -759,7 +777,7 @@ local function createArmoryPanel(parent)
     for _, s in ipairs(list) do
       local raw = s.sub or GROUP_LABEL[s.g]
       local d = findDungeon(raw)
-      local sub = L[raw]
+      local sub = sectionText(raw)
       if d and d.level then sub = sub .. "  |cff9d9d9d·  " .. d.level .. "|r" end
       if s.st == 0 then sub = sub .. "  |cff9d9d9d" .. L["(not in Forever yet)"] .. "|r" end
       if sub ~= lastSub then
@@ -829,7 +847,7 @@ local function createArmoryPanel(parent)
     dTitle:SetText(setName(s))
     local cls = {}
     for _, c in ipairs(s.cls or {}) do cls[#cls + 1] = className(c) end
-    local parts = { L[s.sub or GROUP_LABEL[s.g]] }
+    local parts = { sectionText(s.sub or GROUP_LABEL[s.g]) }
     if s.arm then parts[#parts + 1] = L[s.arm] end
     if s.lv then parts[#parts + 1] = string.format(L["Requires level %d"], s.lv) end
     if #cls > 0 and #cls < 9 then parts[#parts + 1] = table.concat(cls, ", ") end

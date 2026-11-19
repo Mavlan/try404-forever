@@ -17,7 +17,7 @@ FLT.SkillUp = SU
 SU.PROFS = { Alchemy = true, Blacksmithing = true, Enchanting = true, Engineering = true, Leatherworking = true,
   Tailoring = true, Cooking = true, ["First Aid"] = true }
 SU.Z90 = 1.2816 -- one-sided 90 %
-local CALLER = "OneForAll"
+local CALLER = "Try404 Guide"
 local GetItemInfo = (C_Item and C_Item.GetItemInfo) or GetItemInfo
 local GetItemCount = GetItemCount or (C_Item and C_Item.GetItemCount)
 

@@ -370,9 +370,9 @@ tryShowItemTooltip = function(owner, item)
         anchorItemTooltip(owner)
         local q = rec.quality
         local c = q and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[q]
-        GameTooltip:AddLine(rec.name, c and c.r or 1, c and c.g or 1, c and c.b or 1)
+        GameTooltip:AddLine(FLT.ItemName and FLT.ItemName(rec.id, rec.name) or rec.name, c and c.r or 1, c and c.g or 1, c and c.b or 1)
         if rec.slot then GameTooltip:AddLine(FLT.SlotText and FLT.SlotText(rec.slot) or rec.slot, 1, 1, 1) end
-        if rec.summary then GameTooltip:AddLine(rec.summary, 0.85, 0.85, 0.85, true) end
+        if rec.summary then GameTooltip:AddLine(FLT.Name and FLT.Name(rec.summary) or rec.summary, 0.85, 0.85, 0.85, true) end
         GameTooltip:AddLine(" ")
         GameTooltip:AddLine(L["The server does not send the details of this item yet."], 0.60, 0.60, 0.60, true)
         GameTooltip:Show(); finishItemTooltip()
@@ -382,7 +382,7 @@ tryShowItemTooltip = function(owner, item)
       if rec.summary then
         GameTooltip:AddLine(" ")
         GameTooltip:AddLine(DISPLAY_NAME, 1, 0.82, 0.20)
-        GameTooltip:AddLine(rec.summary, 0.85, 0.85, 0.85, true)
+        GameTooltip:AddLine(FLT.Name and FLT.Name(rec.summary) or rec.summary, 0.85, 0.85, 0.85, true)
       end
       GameTooltip:Show(); finishItemTooltip(); return true
     end

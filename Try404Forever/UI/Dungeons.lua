@@ -1106,7 +1106,7 @@ local function createDungeonPanel(parent)
     H.anchorItemTooltip(owner)
     GameTooltip:AddLine(FLT.ItemName and FLT.ItemName(rec.id,rec.name) or rec.name or L["Unknown item"],1,0.82,0)
     if rec.slot then GameTooltip:AddLine(FLT.SlotText and FLT.SlotText(rec.slot) or rec.slot,0.70,0.82,1.00) end
-    if rec.summary then GameTooltip:AddLine(rec.summary,0.85,0.85,0.85,true) end
+    if rec.summary then GameTooltip:AddLine(NM(rec.summary),0.85,0.85,0.85,true) end
     GameTooltip:AddLine(L[label or "Dungeon loot"],0.65,0.85,1)
     if rec.id then GameTooltip:AddLine(string.format(L["Item ID: %s"],tostring(rec.id)),0.55,0.55,0.55) end
     GameTooltip:AddLine(L["Current Forever beta data; stats and drop tables can change."],0.70,0.70,0.70,true)
@@ -1260,7 +1260,7 @@ local function createDungeonPanel(parent)
         -- 6.2.7-beta11: no extra line here - it ran into the header (user screenshot 13.11.); the subtitle says it
       elseif boss.description then
         -- right of the portrait, under the divider (Discord qithulien 16.11.: under the portrait it was covered by it)
-        local desc=dtext(host,"GameFontHighlightSmall"); desc:SetPoint("TOPLEFT",113,-84); desc:SetWidth(405); desc:SetJustifyH("LEFT"); desc:SetText(boss.description)
+        local desc=dtext(host,"GameFontHighlightSmall"); desc:SetPoint("TOPLEFT",113,-84); desc:SetWidth(405); desc:SetJustifyH("LEFT"); desc:SetText(NM(boss.description))
         host.descH=desc.GetStringHeight and desc:GetStringHeight() or 12
       end
 
@@ -1354,7 +1354,7 @@ local function createDungeonPanel(parent)
             local nm=FLT.NewFS(row, nil,"OVERLAY","GameFontNormal"); nm:SetPoint("TOPLEFT",50,-5); nm:SetWidth(380); nm:SetJustifyH("LEFT"); nm:SetText(FLT.ItemName and FLT.ItemName(rec.id,rec.name) or rec.name); colorDungeonItemText(nm,rec,0.55,0.78,1.00)
             host.items[#host.items+1]={text=nm,icon=ic,rec=rec,r=0.55,g=0.78,b=1.00}
             local sl=FLT.NewFS(row, nil,"OVERLAY","GameFontDisableSmall"); sl:SetPoint("TOPLEFT",50,-23); sl:SetWidth(380); sl:SetJustifyH("LEFT")
-            sl:SetText(L[e.prof]..((r.req or r.y) and ("  |  "..string.format(L["skill %s"],r.req or r.y)) or "").."  |  "..(r.n or ""))
+            sl:SetText(L[e.prof]..((r.req or r.y) and ("  |  "..string.format(L["skill %s"],r.req or r.y)) or "").."  |  "..(FLT.RecipeName and FLT.RecipeName(r) or NM(r.n or "")))
             -- yellow = you, green = guild, blue = other OneForAll users online
             if FLT.RecipeKnowState then
               local k,gu,ot=FLT.RecipeKnowState(e.prof,r)
@@ -1445,7 +1445,7 @@ local function createDungeonPanel(parent)
         GameTooltip:SetOwner(self,"ANCHOR_RIGHT")
         GameTooltip:SetText(L[label],1,0.82,0.20)
         if loc.entrance and text then GameTooltip:AddLine(PT(noCoords(text)),0.92,0.90,0.84,true) end
-        GameTooltip:AddLine(loc.label or loc.name or "",0.92,0.90,0.84,true)
+        GameTooltip:AddLine(PT(loc.label or loc.name or ""),0.92,0.90,0.84,true)
         GameTooltip:AddLine(L["Open the world map and mark this location with the golden OneForAll pin."],0.72,0.72,0.72,true)
         GameTooltip:Show()
       end)
@@ -1732,7 +1732,7 @@ local function createDungeonPanel(parent)
             stepMapBtn:SetScript("OnEnter",function(self)
               GameTooltip:SetOwner(self,"ANCHOR_RIGHT")
               GameTooltip:SetText(L["Quest start"],1,0.82,0.20)
-              GameTooltip:AddLine(stepLoc.label or (NM(step.name) or L["Quest step"]),0.92,0.90,0.84,true)
+              GameTooltip:AddLine(stepLoc.label and PT(stepLoc.label) or (NM(step.name) or L["Quest step"]),0.92,0.90,0.84,true)
               GameTooltip:AddLine(L["Open the world map and mark this pickup location with the golden OneForAll pin."],0.72,0.72,0.72,true)
               GameTooltip:Show()
             end)
@@ -1752,7 +1752,7 @@ local function createDungeonPanel(parent)
             elseif isCurrent then
               GameTooltip:AddLine(q.objective and NM(q.objective) or L["The dungeon quest on this page"],0.92,0.90,0.84,true)
             end
-            if stepLoc and stepLoc.label then GameTooltip:AddLine(string.format(L["Map: %s"],stepLoc.label),0.72,0.72,0.72,true) end
+            if stepLoc and stepLoc.label then GameTooltip:AddLine(string.format(L["Map: %s"],PT(stepLoc.label)),0.72,0.72,0.72,true) end
             GameTooltip:Show()
           end)
           row:SetScript("OnLeave",function() GameTooltip:Hide() end)
@@ -1786,7 +1786,7 @@ local function createDungeonPanel(parent)
         ry=cy
         if #rewards==0 then
           local summary=FLT.NewFS(box,nil,"OVERLAY","GameFontHighlightSmall"); summary:SetPoint("TOPLEFT",10,-28); summary:SetWidth(420); summary:SetJustifyH("LEFT")
-          summary:SetText(q.rewardSummary or L["No item reward is listed in the current beta data for this quest."]); summary:SetTextColor(FLT.SkinC(0.80,0.78,0.72))
+          summary:SetText(q.rewardSummary and NM(q.rewardSummary) or L["No item reward is listed in the current beta data for this quest."]); summary:SetTextColor(FLT.SkinC(0.80,0.78,0.72))
           ry=cy-math.max(14,summary:GetStringHeight() or 14)
         else
           rewardRows(rewards,N"Quest reward")
@@ -1795,7 +1795,7 @@ local function createDungeonPanel(parent)
             rewardRows(q.alsoRewards,N"Quest reward")
           end
           if q.rewardSummary then
-            local sum=dtext(rchild,"GameFontHighlightSmall"); sum:SetPoint("TOPLEFT",18,ry-2); sum:SetWidth(420); sum:SetJustifyH("LEFT"); sum:SetText(q.rewardSummary); sum:SetTextColor(FLT.SkinC(0.80,0.78,0.72)); ry=ry-20
+            local sum=dtext(rchild,"GameFontHighlightSmall"); sum:SetPoint("TOPLEFT",18,ry-2); sum:SetWidth(420); sum:SetJustifyH("LEFT"); sum:SetText(NM(q.rewardSummary)); sum:SetTextColor(FLT.SkinC(0.80,0.78,0.72)); ry=ry-20
           end
         end
         ry=close(ry)
@@ -2031,7 +2031,7 @@ local function createDungeonPanel(parent)
         FLT.SetTex(kic, dungeonItemIcon({id=k.item,name=k.name}))
         local kn=FLT.NewFS(box,nil,"OVERLAY","GameFontHighlight"); kn:SetPoint("TOPLEFT",50,-29); kn:SetText(NM(k.name))
         keyStatus=FLT.NewFS(box,nil,"OVERLAY","GameFontHighlightSmall"); keyStatus:SetPoint("TOPLEFT",50,-47)
-        local sum=FLT.NewFS(box,nil,"OVERLAY","GameFontHighlightSmall"); sum:SetPoint("TOPLEFT",10,-68); sum:SetWidth(420); sum:SetJustifyH("LEFT"); sum:SetText(k.summary or ""); sum:SetWordWrap(true)
+        local sum=FLT.NewFS(box,nil,"OVERLAY","GameFontHighlightSmall"); sum:SetPoint("TOPLEFT",10,-68); sum:SetWidth(420); sum:SetJustifyH("LEFT"); sum:SetText(NM(k.summary or "")); sum:SetWordWrap(true)
         local hover=CreateFrame("Frame",nil,box); hover:SetPoint("TOPLEFT",8,-26); hover:SetSize(260,36)
         hover:SetScript("OnEnter",function(self) H.tryShowItemTooltip(self,{id=k.item,name=k.name}) end)
         hover:SetScript("OnLeave",function() GameTooltip:Hide() end)

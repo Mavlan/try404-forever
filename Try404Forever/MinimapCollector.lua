@@ -51,7 +51,7 @@ local function isCandidate(f)
   if f.IsForbidden and f:IsForbidden() then return false end
   local name = f.GetName and f:GetName()
   if type(name) ~= "string" or name == "" then return false end
-  if name == "LibDBIcon10_OneForAll" then return false end -- our own (Minimap.lua, with Leatrix Plus)
+  if name == "LibDBIcon10_Try404Guide" or name == "LibDBIcon10_OneForAll" then return false end -- our own (Minimap.lua, with Leatrix Plus)
   if name:find("^LibDBIcon10_") then return true end
   -- D4Lib buttons (MapUtils, ImproveAny ... by D4KiR): "MinimapButton_D4Lib_LibDBIcon_<name>"; they start with
   -- "Minimap" and fell through SKIP_PREFIX (user 25.10.)
@@ -236,7 +236,7 @@ local function create()
   collector:SetScript("OnDragStop", function(self) self:StopMovingOrSizing(); savePos() end)
   collector:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-    GameTooltip:AddLine(FLT.DISPLAY_NAME or "OneForAll", 1, 0.82, 0)
+    GameTooltip:AddLine(FLT.DISPLAY_NAME or "Try404 Guide", 1, 0.82, 0)
     GameTooltip:AddLine(L["Left-click: Minimap buttons"], 1, 1, 1)
     GameTooltip:AddLine(L["Right-click: Open / close OneForAll"], 1, 1, 1)
     GameTooltip:AddLine(L["Shift-right-click: Crafting List"], 1, 1, 1)
@@ -256,7 +256,7 @@ function FLT.MinimapCollectorRefresh()
     create()
     collector:Show()
     if own then own:Hide() end
-    if ldbi then pcall(ldbi.Hide, ldbi, "OneForAll") end
+    if ldbi then pcall(ldbi.Hide, ldbi, "Try404Guide") end
     scan()
   else
     if bar then bar:Hide() end
@@ -267,7 +267,7 @@ function FLT.MinimapCollectorRefresh()
     local show = not (qol() and qol().Get("mmHide"))
     if ldbi then
       if own then own:Hide() end
-      pcall(show and ldbi.Show or ldbi.Hide, ldbi, "OneForAll")
+      pcall(show and ldbi.Show or ldbi.Hide, ldbi, "Try404Guide")
     elseif own then own:SetShown(show) end
   end
 end

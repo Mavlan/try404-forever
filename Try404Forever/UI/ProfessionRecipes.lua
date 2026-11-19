@@ -29,14 +29,19 @@ local QCOL = { [0]={0.62,0.62,0.62}, [1]={1,1,1}, [2]={0.12,1,0}, [3]={0,0.44,0.
 -- cached once known (the item may not be loaded yet on the first call)
 local rnames = setmetatable({}, { __mode = "k" })
 local function recipeName(r)
-  if not (FLT.ClientTexts and FLT.ClientTexts()) then return r.n end
+  if not (FLT.Language and FLT.Language() ~= "enUS") then return r.n end
   local n = rnames[r]
   if n then return n end
-  if r.i then n = FLT.ItemName(r.i) end
-  if not n and r.s then pcall(function() n = (C_Spell and C_Spell.GetSpellName and C_Spell.GetSpellName(r.s)) or (GetSpellInfo and GetSpellInfo(r.s)) end) end
-  if type(n) ~= "string" or n == "" then return r.n end
-  rnames[r] = n
-  return n
+  -- Cache only a name actually returned by the matching client. Fallback data
+  -- may be available before the client's asynchronous item/spell information.
+  if FLT.ClientTexts and FLT.ClientTexts() then
+    if r.i then pcall(function() n = C_Item and C_Item.GetItemNameByID and C_Item.GetItemNameByID(r.i) or (GetItemInfo and GetItemInfo(r.i)) end) end
+    if (type(n) ~= "string" or not n:find("[\128-\255]")) and r.s then
+      pcall(function() n = (C_Spell and C_Spell.GetSpellName and C_Spell.GetSpellName(r.s)) or (GetSpellInfo and GetSpellInfo(r.s)) end)
+    end
+    if type(n) == "string" and n:find("[\128-\255]") then rnames[r] = n; return n end
+  end
+  return (r.i and FLT.ItemName and FLT.ItemName(r.i, r.n)) or (FLT.Name and FLT.Name(r.n)) or r.n
 end
 FLT.RecipeName = recipeName
 -- the reagents of a recipe as one lower-case text for the search (6.2.2, user 09.11.: "coarse thread" finds every
@@ -583,10 +588,35 @@ local function linkRecipe(r, button, H)
 end
 FLT.RecipeIcon = recipeIcon
 
-local function itemName(id)
+local function itemName(id, fallback)
+  if FLT.ItemName then return FLT.ItemName(id, fallback) end
   local n = GetItemInfo and GetItemInfo(id)
   if not n and C_Item and C_Item.RequestLoadItemDataByID then pcall(C_Item.RequestLoadItemDataByID, id) end
-  return n
+  return n or fallback
+end
+local RECIPE_PREFIX = {
+  Formula = { zhCN = "公式：", zhTW = "公式：" },
+  Pattern = { zhCN = "图样：", zhTW = "圖樣：" },
+  Plans = { zhCN = "设计图：", zhTW = "設計圖：" },
+  Recipe = { zhCN = "配方：", zhTW = "配方：" },
+  Schematic = { zhCN = "结构图：", zhTW = "結構圖：" },
+  Blueprint = { zhCN = "蓝图：", zhTW = "藍圖：" },
+  Manual = { zhCN = "手册：", zhTW = "手冊：" },
+}
+local function recipeItemName(r)
+  local fallback = r.rn or L["Recipe item"]
+  if not (FLT.Language and FLT.Language() ~= "enUS") then return fallback end
+  -- Requests an uncached item once via the shared item helper. A name supplied
+  -- by the matching game client takes precedence over our offline fallbacks.
+  local resolved = itemName(r.ri, fallback)
+  if type(resolved) == "string" and resolved:find("[\128-\255]") then return resolved end
+  local prefix, taught = fallback:match("^([^:]+): (.+)$")
+  local words = prefix and RECIPE_PREFIX[prefix]
+  if words and taught == r.n then
+    local name = recipeName(r)
+    if type(name) == "string" and name:find("[\128-\255]") then return (words[FLT.Language()] or "") .. name end
+  end
+  return resolved or fallback
 end
 
 -- ---------------------------------------------------------------------------
@@ -776,11 +806,17 @@ function UI.CreateRecipeBrowser(parent)
   favEmpty:SetPoint("TOPLEFT", 16, -16); favEmpty:SetWidth(296); favEmpty:SetJustifyH("LEFT")
   favEmpty:SetText(L["No favorites yet. Open a recipe in All recipes and click the star at the top right to add it here."])
   favEmpty:Hide()
-  local detailWidgets = {}
+  local detailWidgets, itemWatch = {}, {}
 
+  local function watchItem(id, update)
+    if not id then return end
+    itemWatch[id] = itemWatch[id] or {}
+    itemWatch[id][#itemWatch[id] + 1] = update
+  end
   local function clearDetail()
     for _, w in ipairs(detailWidgets) do w:Hide() end
     wipe(detailWidgets)
+    wipe(itemWatch)
     searchUI.fs, searchUI.btn, searchUI.r = nil, nil, nil
   end
   local function dtext(template, w, parent)
@@ -794,11 +830,13 @@ function UI.CreateRecipeBrowser(parent)
     detailWidgets[#detailWidgets + 1] = fr
     return fr
   end
-  local function itemRow(id, y, label, sub, count, parent)
+  local function itemRow(id, y, label, sub, count, parent, resolveName)
     local b = dframe("Button", nil, parent); b:SetSize(parent and 384 or 400, 30); b:SetPoint("TOPLEFT", parent and 8 or 0, y)
     UI.CardRow(b)
     local ic = b:CreateTexture(nil, "ARTWORK"); ic:SetSize(24, 24); ic:SetPoint("LEFT", 4, 0); FLT.SetTex(ic, itemIcon(id))
-    local t = FLT.NewFS(b, nil, "OVERLAY", "GameFontHighlight"); t:SetPoint("LEFT", 36, sub and 6 or 0); t:SetWidth(300); t:SetJustifyH("LEFT"); t:SetText(label or itemName(id) or (L["Item"] .. " " .. id))
+    local t = FLT.NewFS(b, nil, "OVERLAY", "GameFontHighlight"); t:SetPoint("LEFT", 36, sub and 6 or 0); t:SetWidth(300); t:SetJustifyH("LEFT")
+    local function updateName() t:SetText((resolveName and resolveName()) or itemName(id, label) or (L["Item"] .. " " .. id)) end
+    updateName(); watchItem(id, updateName)
     if sub then local s = FLT.NewFS(b, nil, "OVERLAY", "GameFontDisableSmall"); s:SetPoint("LEFT", 34, -8); s:SetText(sub) end
     if count then local c = FLT.NewFS(b, nil, "OVERLAY", "GameFontHighlight"); c:SetPoint("RIGHT", -6, 0); c:SetText(count) end
     b:SetScript("OnEnter", function(self) if H and H.tryShowItemTooltip then H.tryShowItemTooltip(self, {id, label or ""}) end end)
@@ -945,7 +983,7 @@ function UI.CreateRecipeBrowser(parent)
     -- 6.1.0 (user 03.11.): no automatic search when a recipe is opened - only the "Search" button asks the channel
     local guild = FLT.GetGuildRecipeKnowers and FLT.GetGuildRecipeKnowers(prof, r.s)
     local others = onlineOthers(prof, r.s)
-    sub:SetText((r.cat or "") .. (p.known[r.s] and "   " .. FLT.SkinHex("ffd926") .. L["Known"] .. "|r" or (guild and "   |cff59ff73" .. L["Known in your guild"] .. "|r" or (others and "   |cff5ab3ff" .. L["Known by other players"] .. "|r" or ""))))
+    sub:SetText((r.cat and ((FLT.Name and FLT.Name(r.cat)) or r.cat) or "") .. (p.known[r.s] and "   " .. FLT.SkinHex("ffd926") .. L["Known"] .. "|r" or (guild and "   |cff59ff73" .. L["Known in your guild"] .. "|r" or (others and "   |cff5ab3ff" .. L["Known by other players"] .. "|r" or ""))))
     big:EnableMouse(true)
     big:SetScript("OnMouseUp", function(_, button)
       if button == "LeftButton" and IsShiftKeyDown and IsShiftKeyDown() then linkRecipe(r, button, H) end
@@ -970,6 +1008,7 @@ function UI.CreateRecipeBrowser(parent)
       local h = dtext("GameFontNormalSmall", nil, box); h:SetPoint("TOPLEFT", 12, by); h:SetText(label); h:SetTextColor(FLT.SkinC(unpack(GOLD)))
       local b = dtext("GameFontHighlightSmall", textW, box); b:SetPoint("TOPLEFT", 104, by); b:SetText(text)
       by = by - math.max(18, (b:GetStringHeight() or 14) + 6)
+      return b
     end
     local function c(col, v) local k = DIFF[col]; return string.format("|cff%02x%02x%02x%s|r", math.floor(k[1] * 255), math.floor(k[2] * 255), math.floor(k[3] * 255), tostring(v)) end
     y = section(L["Details"], y, function(b, y1) box, by = b, y1
@@ -983,7 +1022,7 @@ function UI.CreateRecipeBrowser(parent)
       local pl = UnitLevel and UnitLevel("player") or 0
       line(L["Use"], (pl < r.lv and "|cffff6060" or "") .. string.format(L["Requires level %s"], r.lv) .. (pl < r.lv and "|r" or ""))
     end
-    local learn
+    local learn, recipeSourceSuffix
     if r.start then learn = string.format(L["Known when you learn %s"], L[prof])
     elseif r.ri then
       -- How to get the recipe item: vendor, world drop, specific mobs, quest, Favor.
@@ -999,9 +1038,11 @@ function UI.CreateRecipeBrowser(parent)
         how[#how + 1] = (n >= 10) and "|cffff9933" .. L["World drop"] .. "|r" or "|cffff9933" .. L["Drop"] .. "|r (" .. (n == 1 and L["1 mob"] or string.format(L["%d mobs"], n)) .. ")"
       end
       if src.qs then how[#how + 1] = "|cff7fbfff" .. L["Quest reward"] .. "|r" end
-      learn = (r.rn or L["Recipe item"]) .. "\n" .. (#how > 0 and table.concat(how, "  +  ") or "|cff9d9d9d" .. L["Source not known yet"] .. "|r")
+      recipeSourceSuffix = "\n" .. (#how > 0 and table.concat(how, "  +  ") or "|cff9d9d9d" .. L["Source not known yet"] .. "|r")
+      learn = recipeItemName(r) .. recipeSourceSuffix
     else learn = L["Profession trainer"] end
-    line(L["Learned from"], learn)
+    local learnText = line(L["Learned from"], learn)
+    if r.ri and recipeSourceSuffix then watchItem(r.ri, function() learnText:SetText(recipeItemName(r) .. recipeSourceSuffix) end) end
     -- the Crafting List / Craft stack (anchored in rchild at y -100) must fit into the box
     if recipeBar and recipeBar:IsShown() then by = math.min(by, -30 - recipeBar:UsedHeight()) end
     return by + 4 end)
@@ -1010,7 +1051,7 @@ function UI.CreateRecipeBrowser(parent)
       for _, rg in ipairs(r.r or {}) do
         local have = GetItemCount and GetItemCount(rg[1], true) or 0
         local col = have >= rg[2] and "|cff59ff73" or "|cffff6060"
-        local row = itemRow(rg[1], ry, itemName(rg[1]) or (rg[3] ~= "" and rg[3]) or nil, nil, col .. have .. "|r / " .. rg[2], b); ry = ry - 32
+        local row = itemRow(rg[1], ry, (rg[3] ~= "" and rg[3]) or nil, nil, col .. have .. "|r / " .. rg[2], b); ry = ry - 32
         -- a click shows where to get it (6.1.5, user 05.11.); Shift / Ctrl-click as before
         local old = row:GetScript("OnClick")
         row:SetScript("OnClick", function(self, button)
@@ -1146,7 +1187,7 @@ function UI.CreateRecipeBrowser(parent)
 
     if r.ri then
       y = section(L["Recipe"], y - 10, function(b, ry)
-        itemRow(r.ri, ry, r.rn, nil, nil, b); ry = ry - 38
+        itemRow(r.ri, ry, r.rn, nil, nil, b, function() return recipeItemName(r) end); ry = ry - 38
         local src = r.src or {}
         local function sub(text)
           local t = dtext("GameFontNormalSmall", nil, b); t:SetPoint("TOPLEFT", 12, ry); t:SetText(text); t:SetTextColor(FLT.SkinC(unpack(GOLD))); ry = ry - 20
@@ -1175,7 +1216,7 @@ function UI.CreateRecipeBrowser(parent)
         end
         if src.qs then
           sub(L["Quest reward"])
-          for _, q in ipairs(src.qs) do local qt = dtext("GameFontHighlightSmall", 370, b); qt:SetPoint("TOPLEFT", 14, ry); qt:SetText(q[2]); ry = ry - 18 end
+          for _, q in ipairs(src.qs) do local qt = dtext("GameFontHighlightSmall", 370, b); qt:SetPoint("TOPLEFT", 14, ry); qt:SetText((FLT.Name and FLT.Name(q[2])) or q[2]); ry = ry - 18 end
         end
         if not (src.v or src.d or src.qs) then
           local t = dtext("GameFontDisableSmall", 370, b); t:SetPoint("TOPLEFT", 12, ry)
@@ -1267,9 +1308,24 @@ function UI.CreateRecipeBrowser(parent)
   end
   lsf:HookScript("OnVerticalScroll", function() f:DrawRows() end)
   -- the "(n)" you can make follows your bags, but only while the list is open (6.0.1-beta2)
-  f:SetScript("OnShow", function(self) self:RegisterEvent("BAG_UPDATE_DELAYED") end)
-  f:SetScript("OnHide", function(self) self:UnregisterEvent("BAG_UPDATE_DELAYED") end)
-  f:SetScript("OnEvent", function(self) if self:IsVisible() then self:DrawRows() end end)
+  f:SetScript("OnShow", function(self)
+    self:RegisterEvent("BAG_UPDATE_DELAYED")
+    pcall(self.RegisterEvent, self, "GET_ITEM_INFO_RECEIVED")
+    pcall(self.RegisterEvent, self, "ITEM_DATA_LOAD_RESULT")
+  end)
+  f:SetScript("OnHide", function(self)
+    self:UnregisterEvent("BAG_UPDATE_DELAYED")
+    self:UnregisterEvent("GET_ITEM_INFO_RECEIVED")
+    self:UnregisterEvent("ITEM_DATA_LOAD_RESULT")
+  end)
+  f:SetScript("OnEvent", function(self, event, id, success)
+    if not self:IsVisible() then return end
+    if event == "BAG_UPDATE_DELAYED" then self:DrawRows(); return end
+    -- Update only text for items in the current detail, without rebuilding frames.
+    if success ~= false and id and itemWatch[id] then
+      for _, update in ipairs(itemWatch[id]) do update() end
+    end
+  end)
   lsf:HookScript("OnSizeChanged", function() f:DrawRows() end)
 
   -- what the detail view of a recipe shows, as a string (see f:Refresh)

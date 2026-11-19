@@ -170,6 +170,19 @@ local function createBooksPanel(frame)
   local W = UI.CONTENT_W - 174 -- ht8: right of the side list
   local Card = UI.Card
   local rows, sections, progress, nearbyCheck = {}, {}, nil, nil
+  local bookNames = {}
+  panel:HookScript("OnShow", function(self)
+    pcall(self.RegisterEvent, self, "GET_ITEM_INFO_RECEIVED")
+    pcall(self.RegisterEvent, self, "ITEM_DATA_LOAD_RESULT")
+  end)
+  panel:HookScript("OnHide", function(self)
+    self:UnregisterEvent("GET_ITEM_INFO_RECEIVED")
+    self:UnregisterEvent("ITEM_DATA_LOAD_RESULT")
+  end)
+  panel:HookScript("OnEvent", function(_, _, id, success)
+    local entry = bookNames[id]
+    if entry and success ~= false then entry.text:SetText(bookName(entry.book)) end
+  end)
 
   -- Title band with the library emblem and the tab's banner art.
   local band = UI.TitleBand(panel, {
@@ -271,6 +284,7 @@ local function createBooksPanel(frame)
 
     local name = FLT.NewFS(row, nil, "OVERLAY", "GameFontHighlight")
     name:SetPoint("LEFT", COL.name, 0); name:SetWidth(COL_W.name); name:SetJustifyH("LEFT"); name:SetText(bookName(book))
+    bookNames[book.itemId] = { text = name, book = book }
     if name.SetWordWrap then name:SetWordWrap(false) end
     name:SetTextColor(FLT.SkinC(0.95, 0.93, 0.88))
 

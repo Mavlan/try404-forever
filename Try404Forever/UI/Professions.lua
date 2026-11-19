@@ -37,7 +37,7 @@ local function reagPart(part)
   return id and (lead .. (IN(id, name) or name) .. count) or part
 end
 local function reagText(s)
-  if type(s) ~= "string" or not (FLT.ClientTexts and FLT.ClientTexts()) then return s end
+  if type(s) ~= "string" or not FLT.Language or FLT.Language() == "enUS" then return s end
   if not reagIDs then
     reagIDs = {}
     for _, list in pairs(FLT.PROFESSION_RECIPES or {}) do
@@ -146,7 +146,7 @@ local function createProfessionPanel(parent)
 
   local hubBox=CreateFrame("Frame",nil,overview); hubBox:SetPoint("TOPLEFT",stepsBox,"BOTTOMLEFT",0,-10); hubBox:SetSize(395,70)
   UI.FramedPanel(hubBox)
-  local hf=FLT.NewFS(hubBox, nil,"OVERLAY","GameFontNormal"); hf:SetPoint("TOPLEFT",12,-10); hf:SetWidth(290); hf:SetJustifyH("LEFT"); hf:SetText((hub and hub.name or L["Trade hub"])); hf:SetTextColor(FLT.SkinC(1,0.82,0.20))
+  local hf=FLT.NewFS(hubBox, nil,"OVERLAY","GameFontNormal"); hf:SetPoint("TOPLEFT",12,-10); hf:SetWidth(290); hf:SetJustifyH("LEFT"); hf:SetText(hub and (FLT.Name and FLT.Name(hub.name) or hub.name) or L["Trade hub"]); hf:SetTextColor(FLT.SkinC(1,0.82,0.20))
   local hw=FLT.NewFS(hubBox, nil,"OVERLAY","GameFontHighlightSmall"); hw:SetPoint("TOPLEFT",12,-32); hw:SetWidth(290); hw:SetJustifyH("LEFT")
   if hub then hw:SetText(string.format("%s, %s\n" .. L["Turn-in: %s"],L[hub.place or ""],ZN(hub.zone or ""),hub.handin and FLT.Name and FLT.Name(hub.handin) or hub.handin or L["supply representative"])) else hw:SetText(L["Location unavailable"]) end
   local hubMap=UI.GoldButton(hubBox,L["Map"],74,22,UI.ASSET_ROOT.."icon_map",12); hubMap:SetPoint("RIGHT",-12,0)
@@ -295,7 +295,7 @@ local function createProfessionPanel(parent)
   local recipeRowsByProfession={}
 
   local function recipeFullName(recipe)
-    return ((FLT.RECIPE_PREFIX or {})[recipe.profession] or "")..recipe.name
+    return L["Recipe"] .. ": " .. (FLT.Name and FLT.Name(recipe.name) or recipe.name)
   end
 
   local STAT_LABELS = {
@@ -314,12 +314,12 @@ local function createProfessionPanel(parent)
     if info then
       GameTooltip:AddLine(" ")
       GameTooltip:AddLine(L["Crafted result"],1,0.82,0.20)
-      GameTooltip:AddLine(recipe.name,0.95,0.95,0.95)
+      GameTooltip:AddLine(FLT.Name and FLT.Name(recipe.name) or recipe.name,0.95,0.95,0.95)
       if info.level then GameTooltip:AddLine(string.format(L["Requires Level %s"], tostring(info.level)),1,1,1) end
-      if info.effect then GameTooltip:AddLine(info.effect,0.25,1.00,0.25,true) end
+      if info.effect then GameTooltip:AddLine(FLT.Name and FLT.Name(info.effect) or info.effect,0.25,1.00,0.25,true) end
       if info.reagents then
         GameTooltip:AddLine(" ")
-        GameTooltip:AddLine(string.format(L["Reagents: %s"], info.reagents),0.82,0.82,0.82,true)
+        GameTooltip:AddLine(string.format(L["Reagents: %s"], reagText(info.reagents)),0.82,0.82,0.82,true)
       end
       return true
     end
@@ -415,7 +415,7 @@ local function createProfessionPanel(parent)
     if offline and not added and offline.effect and offline.effect ~= "" then
       GameTooltip:AddLine(" ")
       GameTooltip:AddLine(recipe.profession == "Enchanting" and L["Enchant effect"] or L["Crafted effect"],1,0.82,0.20)
-      GameTooltip:AddLine(tostring(offline.effect),0.25,1.00,0.25,true)
+      GameTooltip:AddLine(FLT.Name and FLT.Name(tostring(offline.effect)) or tostring(offline.effect),0.25,1.00,0.25,true)
       added=true
     end
     if offline and not added and offline.stats and next(offline.stats) then
@@ -431,9 +431,9 @@ local function createProfessionPanel(parent)
     if extra then
       if not added then
         GameTooltip:AddLine(" ")
-        GameTooltip:AddLine(extra.label or L["Crafted result"],1,0.82,0.20)
+        GameTooltip:AddLine(extra.label and (FLT.Name and FLT.Name(extra.label) or extra.label) or L["Crafted result"],1,0.82,0.20)
       end
-      GameTooltip:AddLine(extra.effect,0.25,1.00,0.25,true)
+      GameTooltip:AddLine(FLT.Name and FLT.Name(extra.effect) or extra.effect,0.25,1.00,0.25,true)
       added=true
     end
 
@@ -441,9 +441,9 @@ local function createProfessionPanel(parent)
       GameTooltip:AddLine(" ")
       GameTooltip:AddLine(L["Crafted result"],1,0.82,0.20)
       if recipe.profession == "Enchanting" and recipe.name:find("^Enchant ") then
-        GameTooltip:AddLine(string.format(L["Applies %s. Exact effect text is loaded automatically when the Forever client exposes this enchant spell."], recipe.name),0.72,0.72,0.72,true)
+        GameTooltip:AddLine(string.format(L["Applies %s. Exact effect text is loaded automatically when the Forever client exposes this enchant spell."], FLT.Name and FLT.Name(recipe.name) or recipe.name),0.72,0.72,0.72,true)
       else
-        GameTooltip:AddLine(recipe.name,0.95,0.95,0.95)
+        GameTooltip:AddLine(FLT.Name and FLT.Name(recipe.name) or recipe.name,0.95,0.95,0.95)
         GameTooltip:AddLine(L["Exact result stats/effect are loaded automatically from the client when the crafted result is available in the item cache."],0.72,0.72,0.72,true)
       end
     end
@@ -473,7 +473,7 @@ local function createProfessionPanel(parent)
         GameTooltip:AddLine(full,0.95,0.95,0.95,true)
         GameTooltip:AddDoubleLine(string.format(L["Requires %s"], L[tostring(recipe.profession)]), tostring(recipe.skill or "-"), 1,0.25,0.25, 1,1,1)
         GameTooltip:AddDoubleLine(L["Merchant's Favor"],tostring(recipe.cost),1,0.82,0.20,1,0.82,0.20)
-        GameTooltip:AddLine(string.format(L["Sold by %s"], vendor or L["profession quartermaster"]),0.65,0.85,1)
+        GameTooltip:AddLine(string.format(L["Sold by %s"], (vendor and FLT.Name and FLT.Name(vendor)) or vendor or L["profession quartermaster"]),0.65,0.85,1)
         GameTooltip:Show()
         if C_Timer and C_Timer.After and GetItemInfo and not GetItemInfo(offline.craftedItemID) then
           C_Timer.After(0.35,function()
@@ -500,7 +500,7 @@ local function createProfessionPanel(parent)
       addRuntimeResultDetails(recipe)
       GameTooltip:AddLine(" ")
       GameTooltip:AddDoubleLine(L["Merchant's Favor"],tostring(recipe.cost),1,0.82,0.20,1,0.82,0.20)
-      GameTooltip:AddLine(string.format(L["Sold by %s"], vendor or L["profession quartermaster"]),0.65,0.85,1)
+      GameTooltip:AddLine(string.format(L["Sold by %s"], (vendor and FLT.Name and FLT.Name(vendor)) or vendor or L["profession quartermaster"]),0.65,0.85,1)
     else
       GameTooltip:ClearLines()
       GameTooltip:AddLine(full,1,0.82,0)
@@ -508,14 +508,14 @@ local function createProfessionPanel(parent)
       GameTooltip:AddLine(string.format(L["Requires %s"], L[recipe.profession]).." ("..tostring(recipe.skill)..")",1,0.25,0.25)
       GameTooltip:AddLine(" ")
       if recipe.profession == "Enchanting" and recipe.name:find("^Enchant ") then
-        GameTooltip:AddLine(string.format(L["Teaches you %s."], recipe.name),0.25,1.00,0.25,true)
+        GameTooltip:AddLine(string.format(L["Teaches you %s."], FLT.Name and FLT.Name(recipe.name) or recipe.name),0.25,1.00,0.25,true)
       else
-        GameTooltip:AddLine(string.format(L["Teaches you how to craft %s."], recipe.name),0.25,1.00,0.25,true)
+        GameTooltip:AddLine(string.format(L["Teaches you how to craft %s."], FLT.Name and FLT.Name(recipe.name) or recipe.name),0.25,1.00,0.25,true)
       end
       addRuntimeResultDetails(recipe)
       GameTooltip:AddLine(" ")
       GameTooltip:AddDoubleLine(L["Cost"],recipe.cost.." "..L["Merchant's Favor"],0.80,0.80,0.80,1,0.82,0.20)
-      GameTooltip:AddLine(string.format(L["Sold by %s"], vendor or L["profession quartermaster"]),0.65,0.85,1)
+      GameTooltip:AddLine(string.format(L["Sold by %s"], (vendor and FLT.Name and FLT.Name(vendor)) or vendor or L["profession quartermaster"]),0.65,0.85,1)
       if itemId then
         GameTooltip:AddLine(string.format(L["Item ID: %s"], tostring(itemId)),0.55,0.55,0.55)
       end
@@ -535,9 +535,9 @@ local function createProfessionPanel(parent)
         local row=CreateFrame("Button",nil,rchild); row:SetSize(778,31); row:SetPoint("TOPLEFT",1,yoff); yoff=yoff-34
         UI.CardRow(row)
         local icon=row:CreateTexture(nil,"ARTWORK"); icon:SetSize(20,20); icon:SetPoint("LEFT",10,0); FLT.SetTex(icon, "Interface\\Icons\\INV_Misc_Note_01")
-        local nm=FLT.NewFS(row, nil,"OVERLAY","GameFontHighlight"); nm:SetPoint("LEFT",40,0); nm:SetWidth(480); nm:SetJustifyH("LEFT"); nm:SetText(recipe.name)
+        local nm=FLT.NewFS(row, nil,"OVERLAY","GameFontHighlight"); nm:SetPoint("LEFT",40,0); nm:SetWidth(480); nm:SetJustifyH("LEFT"); nm:SetText(FLT.Name and FLT.Name(recipe.name) or recipe.name)
         local sk=FLT.NewFS(row, nil,"OVERLAY","GameFontHighlightSmall"); sk:SetPoint("LEFT",540,0); sk:SetWidth(70); sk:SetJustifyH("LEFT"); sk:SetText(recipe.skill)
-        local co=FLT.NewFS(row, nil,"OVERLAY","GameFontNormalSmall"); co:SetPoint("LEFT",630,0); co:SetWidth(125); co:SetJustifyH("LEFT"); co:SetText(recipe.cost.." Favor"); co:SetTextColor(FLT.SkinC(1,0.82,0.20))
+        local co=FLT.NewFS(row, nil,"OVERLAY","GameFontNormalSmall"); co:SetPoint("LEFT",630,0); co:SetWidth(125); co:SetJustifyH("LEFT"); co:SetText(string.format(L["%s Favor"], tostring(recipe.cost))); co:SetTextColor(FLT.SkinC(1,0.82,0.20))
         row:SetScript("OnEnter",function(self) showRecipeTooltip(self,recipe,vendor) end)
         row:SetScript("OnLeave",function() GameTooltip:Hide() end)
         list[#list+1]=row
@@ -652,8 +652,11 @@ local function createProfessionPanel(parent)
       GameTooltip:SetOwner(self,"ANCHOR_RIGHT"); GameTooltip:AddLine(string.format(L["%s trainer"], L[prof]),1,0.82,0)
       local tr=self.trainer
       if tr then
-        GameTooltip:AddLine(tr[2].."  |cff9d9d9d<"..tr[3]..">|r",1,1,1)
-        GameTooltip:AddLine(string.format("%s (%.1f, %.1f)",tr[8],tr[6],tr[7]),0.85,0.82,0.74)
+        local trainerName = FLT.Name and FLT.Name(tr[2]) or tr[2]
+        local trainerTitle = FLT.Name and FLT.Name(tr[3]) or tr[3]
+        local trainerZone = FLT.ZoneName and FLT.ZoneName(tr[8]) or tr[8]
+        GameTooltip:AddLine(trainerName.."  |cff9d9d9d<"..trainerTitle..">|r",1,1,1)
+        GameTooltip:AddLine(string.format("%s (%.1f, %.1f)",trainerZone,tr[6],tr[7]),0.85,0.82,0.74)
         if self.dist then GameTooltip:AddLine(string.format(L["About %d yards away"],math.floor(self.dist/10+0.5)*10),0.7,0.7,0.7) end
       else
         GameTooltip:AddLine(L["No trainer known on this continent."],0.8,0.8,0.8,true)

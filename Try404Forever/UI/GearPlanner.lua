@@ -507,7 +507,7 @@ function FLT.ShowQuestChain(qid)
   end
   local steps = FLT.QuestChain(qid)
   local last = FLT.QuestInfo(qid)
-  p.title:SetText(last and last.name or (L["Quest"] .. " " .. qid))
+  p.title:SetText(last and NM(last.name) or (L["Quest"] .. " " .. qid))
   for _, r in ipairs(p.rows) do r:Hide() end
   local y = 0
   for i, ids in ipairs(steps) do
@@ -1206,8 +1206,8 @@ function UI.CreateGearPlanner(parent)
     end)
     r.go:SetScript("OnEnter", function(self)
       local d = r.e.d; GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-      GameTooltip:AddLine(d and d.name or "", 1, 0.82, 0)
-      GameTooltip:AddLine(r.e.dq and L["Open the quest in Dungeons & Raids."] or r.e.boss == "trash mobs" and L["Open the trash loot in Dungeons & Raids."] or r.e.boss and string.format(L["Open %s in Dungeons & Raids."], r.e.boss) or L["Open the dungeon in Dungeons & Raids."], 1, 1, 1, true)
+      GameTooltip:AddLine(d and (FLT.DungeonName and FLT.DungeonName(d.name) or d.name) or "", 1, 0.82, 0)
+      GameTooltip:AddLine(r.e.dq and L["Open the quest in Dungeons & Raids."] or r.e.boss == "trash mobs" and L["Open the trash loot in Dungeons & Raids."] or r.e.boss and string.format(L["Open %s in Dungeons & Raids."], NM(r.e.boss)) or L["Open the dungeon in Dungeons & Raids."], 1, 1, 1, true)
       GameTooltip:Show()
     end)
     r.go:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -1247,7 +1247,7 @@ function UI.CreateGearPlanner(parent)
       local e = self.e
       if H.tryShowItemTooltip and H.tryShowItemTooltip(self, { id = e.id, name = e.name, quality = e.q }) then return end
       GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-      if not pcall(GameTooltip.SetHyperlink, GameTooltip, "item:" .. e.id) then GameTooltip:AddLine(e.name or (L["Item"] .. " " .. e.id)) end
+      if not pcall(GameTooltip.SetHyperlink, GameTooltip, "item:" .. e.id) then GameTooltip:AddLine((FLT.ItemName and FLT.ItemName(e.id, e.name)) or e.name or (L["Item"] .. " " .. e.id)) end
       GameTooltip:Show()
     end)
     r:HookScript("OnEnter", function()
@@ -1560,7 +1560,7 @@ function UI.CreateGearPlanner(parent)
       -- quality too: quest rewards from QuestieDB come with a name but without quality (legendaries were white)
       if not e.name or not e.q then reqLevel(e) end
       -- quest rewards: the yellow quest "!" right after the name
-      r.name:SetText((e.name or (L["Item"] .. " " .. e.id)) .. (e.qid and " |TInterface\\GossipFrame\\AvailableQuestIcon:0|t" or "")); r.name:SetTextColor(qcolor(e.q))
+      r.name:SetText(((FLT.ItemName and FLT.ItemName(e.id, e.name)) or e.name or (L["Item"] .. " " .. e.id)) .. (e.qid and " |TInterface\\GossipFrame\\AvailableQuestIcon:0|t" or "")); r.name:SetTextColor(qcolor(e.q))
       local lv = e.req or e.lvl
       if e.qreq and (lv or 0) < e.qreq then lv = e.qreq end
       local parts = {}

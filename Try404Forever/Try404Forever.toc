@@ -7,7 +7,7 @@
 ## Notes-zhTW: 魔獸世界：永恆的地城、裝備與專業技能手冊。
 ## Author: Smoergi (OneForAll), Try404 Forever contributors
 ## X-License: GPL-3.0-or-later
-## Version: 6.2.12.2
+## Version: 6.2.12.3
 ## IconTexture: Interface\AddOns\Try404Forever\Assets\try404_icon
 ## OptionalDeps: Baganator
 ## SavedVariables: OneForAllDB, ForeverCompanionDB, ForeverLibraryTrackerDB
@@ -17,9 +17,11 @@ Locales\Locale.lua
 Locales\zhCN.lua
 Locales\Names_zhCN.lua
 Locales\ItemNames_zhCN.lua
+Locales\Supplement_zhCN.lua
 Locales\zhTW.lua
 Locales\Names_zhTW.lua
 Locales\ItemNames_zhTW.lua
+Locales\Supplement_zhTW.lua
 Data.lua
 ExtraData.lua
 ProfessionData.lua
