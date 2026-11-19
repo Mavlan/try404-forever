@@ -60,6 +60,7 @@ local LOGO_COLORS = { red = true, blue = true, green = true, teal = true, violet
 -- "bronze" (header test, user 31.10.): the logo of the window header - the turquoise file without colour, tinted
 -- bronze-gold (FLT.TintLogo on every texture that shows it)
 function FLT.LogoTexture(kind)
+  if kind == "card" then return "Interface\\AddOns\\Try404Forever\\Assets\\try404_four" end
   if kind == "round" then return "Interface\\AddOns\\Try404Forever\\Assets\\try404_icon" end
   local c = FLT.QoL and FLT.QoL.Get and FLT.QoL.Get("logoColor")
   if not LOGO_COLORS[c] then c = "teal" end
@@ -76,7 +77,7 @@ function FLT.TintLogo(tex, color)
 end
 
 function FLT.ApplyLogoColor()
-  if button and button.icon then button.icon:SetTexture(FLT.LogoTexture("round")); FLT.TintLogo(button.icon) end
+  if button and button.icon then button.icon:SetTexture(FLT.LogoTexture("card")); FLT.TintLogo(button.icon) end
   if FLT.collectorIcon then FLT.collectorIcon:SetTexture(FLT.LogoTexture("card")); FLT.TintLogo(FLT.collectorIcon) end
   if FLT.trainerTabIcon then FLT.trainerTabIcon:SetTexture(FLT.LogoTexture("round")); FLT.TintLogo(FLT.trainerTabIcon) end
   if FLT.collectorHi then FLT.collectorHi:SetTexture(FLT.LogoTexture("card")); FLT.TintLogo(FLT.collectorHi) end
@@ -109,7 +110,7 @@ function FLT:CreateMinimapButton()
   -- the round logo (5.7.3, user 26./27.10.) brings its own gold ring: no Blizzard border / background; about the size
   -- of the rings of other minimap buttons. Its color: QoL "logoColor" (turquoise by default, user 27.10.)
   local icon = button:CreateTexture(nil, "ARTWORK")
-  icon:SetTexture(FLT.LogoTexture("round")); FLT.TintLogo(icon)
+  icon:SetTexture(FLT.LogoTexture("card")); FLT.TintLogo(icon)
   icon:SetSize(25, 25)
   icon:SetPoint("CENTER", 0, 0)
   button.icon = icon
@@ -156,7 +157,7 @@ function FLT:CreateMinimapButton()
   if type(AddonCompartmentFrame) == "table" and type(AddonCompartmentFrame.RegisterAddon) == "function" and not FLT.compartmentAdded then
     FLT.compartmentAdded = true
     pcall(AddonCompartmentFrame.RegisterAddon, AddonCompartmentFrame, {
-      text = FLT.DISPLAY_NAME or "OneForAll", icon = "Interface\\AddOns\\Try404Forever\\Assets\\minimap_icon", notCheckable = true,
+      text = FLT.DISPLAY_NAME or "OneForAll", icon = "Interface\\AddOns\\Try404Forever\\Assets\\try404_four", notCheckable = true,
       func = function() if FLT.ToggleUI then FLT:ToggleUI() end end,
       funcOnEnter = function(b)
         GameTooltip:SetOwner(b, "ANCHOR_LEFT"); GameTooltip:AddLine(FLT.DISPLAY_NAME or "OneForAll", 1, 0.82, 0)
@@ -184,7 +185,7 @@ function FLT.RegisterLDBIcon()
   local LDB, LDBI = LibStub("LibDataBroker-1.1", true), LibStub("LibDBIcon-1.0", true)
   if not (LDB and LDBI and LDB.NewDataObject and LDBI.Register) then return false end
   local obj = LDB:NewDataObject("OneForAll", {
-    type = "launcher", icon = "Interface\\AddOns\\Try404Forever\\Assets\\try404_icon",
+    type = "launcher", icon = "Interface\\AddOns\\Try404Forever\\Assets\\try404_four",
     OnClick = function(_, mouse)
       if mouse == "RightButton" then
         if IsAltKeyDown and IsAltKeyDown() and FLT.SkillUp and FLT.SkillUp.ToggleLastGuide then FLT.SkillUp.ToggleLastGuide()

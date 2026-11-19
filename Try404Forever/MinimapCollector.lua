@@ -200,11 +200,11 @@ local function create()
   -- soft round shadow around the gold ring
   -- the card logo in the chosen color (QoL "logoColor"); the picture sits in the middle 46 of 64 pixels
   local icon = collector:CreateTexture(nil, "ARTWORK"); icon:SetAllPoints()
-  icon:SetTexture(FLT.LogoTexture and FLT.LogoTexture("card") or (UI.ASSET_ROOT .. "logo_card_teal")); icon:SetTexCoord(9 / 64, 55 / 64, 0, 1)
+  icon:SetTexture(FLT.LogoTexture and FLT.LogoTexture("card") or (UI.ASSET_ROOT .. "logo_card_teal")); icon:SetTexCoord(0, 1, 0, 1)
   if FLT.TintLogo then FLT.TintLogo(icon) end
   FLT.collectorIcon = icon
   local hi = collector:CreateTexture(nil, "HIGHLIGHT"); hi:SetAllPoints()
-  hi:SetTexture(icon:GetTexture() or (UI.ASSET_ROOT .. "logo_card_teal")); hi:SetTexCoord(9 / 64, 55 / 64, 0, 1); hi:SetBlendMode("ADD"); hi:SetAlpha(0.3)
+  hi:SetTexture(icon:GetTexture() or (UI.ASSET_ROOT .. "logo_card_teal")); hi:SetTexCoord(0, 1, 0, 1); hi:SetBlendMode("ADD"); hi:SetAlpha(0.3)
   if FLT.TintLogo then FLT.TintLogo(hi) end
   FLT.collectorHi = hi
   if FLT.ApplyLogoSize then FLT.ApplyLogoSize() end -- QoL "logoSize" (Minimap.lua)
