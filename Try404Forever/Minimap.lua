@@ -60,7 +60,7 @@ local LOGO_COLORS = { red = true, blue = true, green = true, teal = true, violet
 -- "bronze" (header test, user 31.10.): the logo of the window header - the turquoise file without colour, tinted
 -- bronze-gold (FLT.TintLogo on every texture that shows it)
 function FLT.LogoTexture(kind)
-  if kind == "card" then return "Interface\\AddOns\\Try404Forever\\Assets\\try404_four" end
+  if kind == "card" then return "Interface\\AddOns\\Try404Forever\\Assets\\try404_square" end
   if kind == "round" then return "Interface\\AddOns\\Try404Forever\\Assets\\try404_icon" end
   local c = FLT.QoL and FLT.QoL.Get and FLT.QoL.Get("logoColor")
   if not LOGO_COLORS[c] then c = "teal" end
@@ -89,7 +89,7 @@ function FLT.ApplyLogoSize()
   if s < 0.6 or s > 1.5 then s = 1 end
   if button then button:SetSize(31 * s, 31 * s); button.icon:SetSize(25 * s, 25 * s); button.hl:SetSize(31 * s, 31 * s) end
   local c = FLT.collectorIcon and FLT.collectorIcon:GetParent()
-  if c then c:SetSize(34 * s, 42 * s) end
+  if c then c:SetSize(34 * s, 34 * s) end
 end
 
 function FLT:CreateMinimapButton()
@@ -157,7 +157,7 @@ function FLT:CreateMinimapButton()
   if type(AddonCompartmentFrame) == "table" and type(AddonCompartmentFrame.RegisterAddon) == "function" and not FLT.compartmentAdded then
     FLT.compartmentAdded = true
     pcall(AddonCompartmentFrame.RegisterAddon, AddonCompartmentFrame, {
-      text = FLT.DISPLAY_NAME or "OneForAll", icon = "Interface\\AddOns\\Try404Forever\\Assets\\try404_four", notCheckable = true,
+      text = FLT.DISPLAY_NAME or "OneForAll", icon = "Interface\\AddOns\\Try404Forever\\Assets\\try404_square", notCheckable = true,
       func = function() if FLT.ToggleUI then FLT:ToggleUI() end end,
       funcOnEnter = function(b)
         GameTooltip:SetOwner(b, "ANCHOR_LEFT"); GameTooltip:AddLine(FLT.DISPLAY_NAME or "OneForAll", 1, 0.82, 0)
@@ -185,7 +185,7 @@ function FLT.RegisterLDBIcon()
   local LDB, LDBI = LibStub("LibDataBroker-1.1", true), LibStub("LibDBIcon-1.0", true)
   if not (LDB and LDBI and LDB.NewDataObject and LDBI.Register) then return false end
   local obj = LDB:NewDataObject("OneForAll", {
-    type = "launcher", icon = "Interface\\AddOns\\Try404Forever\\Assets\\try404_four",
+    type = "launcher", icon = "Interface\\AddOns\\Try404Forever\\Assets\\try404_square",
     OnClick = function(_, mouse)
       if mouse == "RightButton" then
         if IsAltKeyDown and IsAltKeyDown() and FLT.SkillUp and FLT.SkillUp.ToggleLastGuide then FLT.SkillUp.ToggleLastGuide()

@@ -192,7 +192,7 @@ end
 local function create()
   if collector then return end
   collector = CreateFrame("Button", "OneForAllMinimapCollector", UIParent)
-  collector:SetSize(34, 42); collector:SetScale(SCALE) -- the card logo (5.7.3, user 26.10.)
+  collector:SetSize(34, 34); collector:SetScale(SCALE) -- the card logo (5.7.3, user 26.10.)
   collector:SetFrameStrata("MEDIUM"); collector:SetFrameLevel(20)
   collector:SetMovable(true); collector:SetClampedToScreen(true)
   collector:RegisterForClicks("LeftButtonUp", "RightButtonUp")
