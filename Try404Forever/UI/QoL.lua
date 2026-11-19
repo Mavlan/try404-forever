@@ -720,6 +720,7 @@ local function createQoLPanel(parent)
   if select(2, UnitClass("player")) == "PALADIN" then
     g = group(c, N"Paladin")
     check(g, N"Seal echo at 3 stacks", N"Highlights the native seal echo icon at three stacks.", N"Add the seal echo to the game cooldown manager first. The game draws the glow without reading secret combat aura values.", "sealEchoGlow")
+    check(g, N"Paladin blessing reminder", N"Reminds you when your own blessing is about to expire or missing.", N"Follows your current long-duration blessing. Reminds 30 seconds before expiry. Click its icon to cast it outside combat. Does not modify general buff reminders.", "paladinBlessingReminder")
   else
     g = group(c, N"Current class")
     row(g, N"No class tools yet", N"Tools for this class can be added here later.")

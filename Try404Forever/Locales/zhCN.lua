@@ -2218,4 +2218,9 @@ FLT.LOCALES.zhCN = function() return {
   ["Current class"] = "当前职业",
   ["No class tools yet"] = "暂无职业小工具",
   ["Tools for this class can be added here later."] = "以后可在这里添加该职业的小工具。",
+  ["Paladin blessing reminder"] = "圣骑士祝福提醒",
+  ["Reminds you when your own blessing is about to expire or missing."] = "自己的祝福即将结束或消失时提醒。",
+  ["Follows your current long-duration blessing. Reminds 30 seconds before expiry. Click its icon to cast it outside combat. Does not modify general buff reminders."] = "自动跟随当前的长期祝福，结束前 30 秒提醒。非战斗中可点击图标施放；不会修改通用增益提醒。",
+  ["Blessing expires soon"] = "即将到期",
+  ["Blessing missing"] = "已消失",
 } end
