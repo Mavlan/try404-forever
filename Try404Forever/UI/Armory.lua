@@ -81,12 +81,7 @@ local IsEquippedItem = IsEquippedItem or (C_Item and C_Item.IsEquippedItem)
 
 local SW = FLT.SlotWord or function(w) return w and L[w] end -- slot / item words ("Back" is not the button "Back")
 local function itemName(id, fallback)
-  -- German client + German chosen: the client's item name first (beta12); else our English name from the data
-  if fallback and not (FLT.ClientTexts and FLT.ClientTexts()) then return fallback end
-  local n = C_Item and C_Item.GetItemNameByID and C_Item.GetItemNameByID(id)
-  if not n and GetItemInfo then n = GetItemInfo(id) end
-  if not n and C_Item and C_Item.RequestLoadItemDataByID then pcall(C_Item.RequestLoadItemDataByID, id) end
-  return n or fallback or (L["Item"] .. " " .. id)
+  return (FLT.ItemName and FLT.ItemName(id, fallback)) or fallback or (L["Item"] .. " " .. id)
 end
 local function setItemIcon(tex, id, icon)
   if type(icon) == "number" and icon > 0 then tex:SetTexture(icon)
@@ -204,7 +199,12 @@ local function clientSet(s)
   setLoc[s.id] = c
   return c
 end
-local function setName(s) local c = clientSet(s); return c and c.n or s.n end
+local function setName(s)
+  local c = clientSet(s)
+  local localized = FLT.Name and FLT.Name(s.n) or s.n
+  if c and c.n and (c.n:find("[\128-\255]") or localized == s.n) then return c.n end
+  return localized
+end
 -- source texts from the data: "Crafted: Tailoring" / "Quest: ..." translated, "Dungeon - Boss" as it is (for now)
 local function sourceText(src)
   local prof = src:match("^Crafted: (.+)$")
@@ -879,7 +879,7 @@ local function createArmoryPanel(parent)
     local cs = clientSet(s)
     for i, bonus in ipairs(s.b or {}) do
       local b = bonusLine(i); b:ClearAllPoints(); b:SetPoint("TOPLEFT", 8, y); b:Show()
-      b:SetText(string.format(L["(%d) Set: %s"], bonus[1], cs and cs.b and cs.b[i] or bonus[2]))
+      b:SetText(string.format(L["(%d) Set: %s"], bonus[1], (cs and cs.b and cs.b[i] and cs.b[i]:find("[\128-\255]")) and cs.b[i] or (FLT.Name and FLT.Name(bonus[2])) or bonus[2]))
       if equipped >= bonus[1] then b:SetTextColor(0.35, 0.90, 0.35) else b:SetTextColor(FLT.SkinC(unpack(DIM))) end
       y = y - (b:GetStringHeight() or 14) - 6
     end

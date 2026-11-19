@@ -45,7 +45,8 @@ function FLT.ClientTexts()
 end
 -- a name from our data (quest, NPC, boss, object, item, quest objective) in the client's language when ClientTexts
 -- (6.2.0 step 2b): Locales/Names_<loc>.lua from QuestieDB's translations (tools/locale/names.lua); else the name itself
-local names -- English -> translation, made on ADDON_LOADED when ClientTexts
+local names, itemNames -- localized fallback data for the selected language
+local requestedItems = {}
 function FLT.Name(s)
   return names and type(s) == "string" and names[s] or s
 end
@@ -115,21 +116,32 @@ end
 -- a zone name from our data ("The Barrens") in the client's language when ClientTexts (map ID from Data.lua MAP_IDS)
 local zoneCache = {}
 function FLT.ZoneName(zone)
-  if type(zone) ~= "string" or not FLT.ClientTexts() then return zone end
+  if type(zone) ~= "string" then return zone end
+  if not FLT.ClientTexts() then return (names and names[zone]) or zone end
   local c = zoneCache[zone]
   if c then return c end
   local id = FLT.MAP_IDS and FLT.MAP_IDS[zone]
   local info = id and type(C_Map) == "table" and type(C_Map.GetMapInfo) == "function" and C_Map.GetMapInfo(id)
-  c = type(info) == "table" and info.name or zone
+  c = type(info) == "table" and info.name or (names and names[zone]) or zone
   zoneCache[zone] = c
   return c
 end
 -- an item's name: the client's when ClientTexts (German client + German), else our English one from the data
 function FLT.ItemName(id, fallback)
-  if fallback and not FLT.ClientTexts() then return fallback end
-  local n = id and C_Item and C_Item.GetItemNameByID and C_Item.GetItemNameByID(id)
-  if not n and id and GetItemInfo then n = GetItemInfo(id) end
-  return n or (names and fallback and names[fallback]) or fallback -- not cached: the QuestieDB name (6.2.0)
+  if FLT.ClientTexts() then
+    local n = id and C_Item and C_Item.GetItemNameByID and C_Item.GetItemNameByID(id)
+    if not n and id and GetItemInfo then n = GetItemInfo(id) end
+    if n then
+      local localized = (itemNames and id and itemNames[id]) or (names and fallback and names[fallback])
+      if localized and not n:find("[\128-\255]") then return localized end
+      return n
+    end
+    if id and not requestedItems[id] and C_Item and C_Item.RequestLoadItemDataByID then
+      requestedItems[id] = true
+      pcall(C_Item.RequestLoadItemDataByID, id)
+    end
+  end
+  return (itemNames and id and itemNames[id]) or (names and fallback and names[fallback]) or fallback
 end
 -- "Head, Leather" / "Two-Hand, Staff" from the data, word by word
 local function slotPart(w) local lead, word = w:match("^(%s*)(.-)%s*$"); return lead .. (FLT.SlotWord(word) or word) end
@@ -168,6 +180,9 @@ f:SetScript("OnEvent", function(self, _, name)
   clientLang = own
   FLT.LOCALES = {} -- the other languages are not needed any more
   local nm = FLT.NAME_LOCALES and FLT.NAME_LOCALES[FLT.Language()]
-  if FLT.ClientTexts() and type(nm) == "function" then names = nm() end
+  if type(nm) == "function" then names = nm() end
+  local im = FLT.ITEM_NAME_LOCALES and FLT.ITEM_NAME_LOCALES[FLT.Language()]
+  if type(im) == "function" then itemNames = im() end
+  FLT.ITEM_NAME_LOCALES = nil
   FLT.NAME_LOCALES = nil -- the name lists are big: only the one in use stays
 end)

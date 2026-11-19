@@ -704,8 +704,8 @@ local function createProfessionPanel(parent)
       r.trainer,r.dist=best,bestD
       r.name:SetText(L[r.prof])
       if best then
-        r.sub:SetText(best[2]..", "..best[8]); r.map:Enable(); r.map:SetLook(true)
-        r.map:SetScript("OnClick",function() FLT:ShowOnMap({mapID=best[5],x=best[6],y=best[7],name=best[2].." ("..L[r.prof]..")"}) end)
+        r.sub:SetText((FLT.Name and FLT.Name(best[2]) or best[2])..", "..(FLT.ZoneName and FLT.ZoneName(best[8]) or best[8])); r.map:Enable(); r.map:SetLook(true)
+        r.map:SetScript("OnClick",function() FLT:ShowOnMap({mapID=best[5],x=best[6],y=best[7],name=(FLT.Name and FLT.Name(best[2]) or best[2]).." ("..L[r.prof]..")"}) end)
       else
         r.sub:SetText(L["none on this continent"]); r.map:Disable(); r.map:SetLook(false)
       end
@@ -900,6 +900,14 @@ local function createProfessionPanel(parent)
   end
   showHome=function()
     hideViews(); subnav:Hide(); homeView:Show(); setNavButtonState("home"); updateHome()
+  end
+  -- 6.2.12-beta25 (tester Deaders 19.11.: a profession learned / unlearned showed only after switching pages): the overview
+  -- follows SKILL_LINES_CHANGED while it is visible (next frame, after ProfessionRecipes has read the skill lines)
+  do
+    local ev=CreateFrame("Frame"); ev:RegisterEvent("SKILL_LINES_CHANGED")
+    ev:SetScript("OnEvent",function()
+      if homeView:IsVisible() and C_Timer then C_Timer.After(0,function() if homeView:IsVisible() then updateHome() end end) end
+    end)
   end
 
   -- Left navigation: Overview, the professions, Camping Buffs (last).

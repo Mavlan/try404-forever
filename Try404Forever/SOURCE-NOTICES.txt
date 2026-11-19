@@ -1,8 +1,8 @@
-TRY404 source and attribution notes — 2026-11-19
+TRY404 source and attribution notes — 2026-11-20
 
 Upstream OneForAll: Copyright (C) 2026 Smoergi and contributors.
 Source: https://github.com/smoergi/OneForAll_Forever
-Baseline: 2d59e1d89381f584543b0d4d3e61e2b46b3af8bc (OneForAll 6.2.11).
+Baseline: 53d072735e293dda14f664424724e62a8ccda465 (OneForAll 6.2.12).
 TRY404 is a modified, independently maintained version. See README.txt for
 our changes and dates; GPL-3.0-or-later applies to OneForAll-derived code.
 
@@ -33,3 +33,7 @@ SealGlow.lua adapts an aura display approach from Unsealed Wrath Tracker
 3.5.0 by KING (MIT). See SEAL-GLOW-LICENSE.txt and ATTRIBUTION/UnsealedWrathTracker/
 for the retained upstream notices, including third-party notices. Reproduced
 upstream notices may describe components, such as sounds, not included here.
+
+Chinese NPC and item name fallbacks were generated from QuestieDB Forever localization
+at commit ae4404b01a45163d3ef05909395b29aafc437bc2, GPL-3.0-or-later.
+

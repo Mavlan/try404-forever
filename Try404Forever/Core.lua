@@ -30,6 +30,8 @@ function FLT.ProfKey(name)
   end
   return profByName[name]
 end
+-- true once the client knows every profession spell's name (ProfKey can map all of them; early after login it can't)
+function FLT.ProfKeyReady() if not profByName then FLT.ProfKey("") end; return profByName ~= nil end
 
 -- Safe calls for event handlers: an error is caught instead of popping up again and
 -- again (e.g. in combat, when the Forever client hands out "secret" values). The
@@ -389,6 +391,14 @@ SlashCmdList.ONEFORALL = function(cmd)
   elseif cmd == "errors clear" then
     if type(OneForAllDB) == "table" then OneForAllDB.errors = nil end
     msg(L["Caught errors cleared."])
+  elseif cmd == "play" then
+    if FLT.GuildGames then FLT.GuildGames.Toggle() end
+  elseif cmd == "play invite" then
+    if FLT.GuildGames then FLT.GuildGames.TestInvite() end
+  elseif cmd == "play debug" then
+    if FLT.GuildGames and FLT.GuildGames.ToggleDebug then FLT.GuildGames.ToggleDebug() end
+  elseif cmd == "play bots" then
+    if FLT.GuildGames then FLT.GuildGames.ToggleBots(); FLT.GuildGames.Open() end
   elseif cmd == "rolltest" then
     if FLT.GearMarks then FLT.GearMarks.RollTest() end
   elseif cmd == "questtest" then

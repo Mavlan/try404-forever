@@ -1,18 +1,18 @@
 TRY404 Guide / TRY404 手册 — independent fork of OneForAll
 ==========================================================
-Based on OneForAll 6.2.11 by Smoergi and contributors.
+Based on OneForAll 6.2.12 by Smoergi and contributors.
 Upstream: https://github.com/smoergi/OneForAll_Forever
-Upstream baseline commit: 2d59e1d89381f584543b0d4d3e61e2b46b3af8bc
+Upstream baseline commit: 53d072735e293dda14f664424724e62a8ccda465
 Copyright (C) 2026 Smoergi and upstream contributors; the respective
 copyright holders retain ownership of their contributions.
 
-TRY404 modifications, 2026-11-10 through 2026-11-19:
+TRY404 modifications, 2026-11-10 through 2026-11-20:
 - Added Simplified and Traditional Chinese translations and localized names.
 - Renamed and rebranded the addon; retained compatible SavedVariables.
 - Added dungeon key/attunement quest tracking and level-60 reference pages.
 - Added Paladin seal-echo highlighting and a Class Tools settings category.
 - Changed default convenience settings and separated TRY404 update notices.
-- Retained and merged selected upstream updates through OneForAll 6.2.11.
+- Retained and merged selected upstream updates through OneForAll 6.2.12.
 See TRY404-NOTES.txt and SOURCE-NOTICES.txt for details and limitations.
 
 The addon is an independently maintained community modification, not an
