@@ -54,6 +54,13 @@ function UI.CreateDungeonMap(parent)
   local items = {} -- { texture, u, v, width, height, turn } for everything drawn on the canvas
   local mask
   local map, data, dungeon, onBoss
+  local floorRoot, floorIndex
+  local floorButton = UI.GoldButton(f, "", 86, 20, nil, 11)
+  floorButton:SetFrameLevel((pinLayer:GetFrameLevel() or 1) + 10) -- keep the control above the map and boss pins
+  floorButton:SetPoint("TOPRIGHT", vp, "TOPRIGHT", -8, -8); floorButton:Hide()
+  floorButton:SetScript("OnClick", function()
+    if floorRoot then floorIndex = floorIndex % #floorRoot.floors + 1; f:SetMap(floorRoot, dungeon, onBoss, floorIndex) end
+  end)
   local zoom, ox, oy = 1, 0, 0
   local TILE = 1600 / 3 -- size of an outdoor minimap square in yards
 
@@ -132,7 +139,18 @@ function UI.CreateDungeonMap(parent)
   end
 
   -- m = FLT.DUNGEON_MAPS[name] (what to show of which map), d = our dungeon
-  function f:SetMap(m, d, bossCallback)
+  function f:SetMap(m, d, bossCallback, selectedFloor)
+    floorRoot = m.floors and m or nil
+    if floorRoot then
+      floorIndex = selectedFloor or 1; m = floorRoot.floors[floorIndex]
+      local lang = FLT.Language and FLT.Language()
+      floorButton:SetLabel((lang == "zhTW" and "樓層 " or lang == "zhCN" and "楼层 " or "Floor ") .. floorIndex .. "/" .. #floorRoot.floors)
+      if #floorRoot.floors > 1 then floorButton:Show() else floorButton:Hide() end
+      hint:SetText(lang == "zhTW" and "滾輪縮放 · 拖曳移動 · 點擊首領查看戰利品" or lang == "zhCN" and "滚轮缩放 · 拖动移动 · 点击首领查看战利品" or "Mouse wheel: zoom · drag: move · click a boss to see its loot")
+    else
+      floorIndex = nil; floorButton:Hide()
+      hint:SetText(L["Mouse wheel: zoom  ·  drag: move  ·  click a boss to see its loot  ·  map layout: Forever Simple World Map by Tarolg"])
+    end
     map, dungeon, onBoss = m, d, bossCallback
     data = FLT.DUNGEON_MAP_DATA and FLT.DUNGEON_MAP_DATA[m.map] or {}
     zoom, ox, oy = 1, 0, 0
@@ -165,7 +183,9 @@ function UI.CreateDungeonMap(parent)
       if inPart(t[2], t[3]) then
         local x = nextTexture(t[1], "ARTWORK", t[7] or 0)
         local turn = quarterTurn(t[6])
-        if turn then
+        if t[8] then
+          x:SetTexCoord(unpack(t[8]))
+        elseif turn then
           local c = TURNS[turn]
           x:SetTexCoord(c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8])
         elseif x.SetRotation then
@@ -183,9 +203,9 @@ function UI.CreateDungeonMap(parent)
       n = n + 1
       local p = pin(n); p:Show()
       local idx = order[b[1]] or i
-      p.u, p.v, p.title = b[2], b[3], b[1]
+      p.u, p.v, p.title = b[2], b[3], (FLT.Name and FLT.Name(b[1]) or b[1])
       p.tip = L["Click: show its loot in Bosses & Loot."]
-      p.icon:Hide(); p.label:SetText(b[1])
+      p.icon:Hide(); p.label:SetText(p.title)
       local boss = d and d.bosses and d.bosses[idx]
       if p.boss and boss and UI.setBossPortrait then
         UI.setBossPortrait(p.boss.portrait, d, boss)
@@ -222,7 +242,12 @@ function UI.CreateDungeonMap(parent)
       p.ring:Hide(); p.disc:Show(); p.num:Show(); p.num:SetText(e[1]); p:SetSize(20, 20)
       p:SetScript("OnClick", nil)
     end
-    note:SetText(#(m.bosses or {}) == 0 and L["Boss positions are not known yet for this dungeon."] or "")
+    if floorRoot then
+      local lang = FLT.Language and FLT.Language()
+      note:SetText(lang == "zhTW" and "首領位置為近似值" or lang == "zhCN" and "首领位置为近似值" or "Boss positions are approximate")
+    else
+      note:SetText(#(m.bosses or {}) == 0 and L["Boss positions are not known yet for this dungeon."] or "")
+    end
     layout()
   end
   f.Refresh = layout

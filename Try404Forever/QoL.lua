@@ -25,7 +25,7 @@ local DEFAULTS = {
   mapFog = false, -- Remove Fog: on (user 22.10.)
   tipMousePos = "BOTTOMRIGHT", -- position preset, the feature itself remains off by default
   junkKey = "alt-right", -- key used to mark junk
-  ahScan = false, gvMode = "overall",
+  ahScan = false, gvMode = "overall", tentWhisperCN = false,
   hideAppearance = false, -- hide "You haven't collected this appearance" in item tooltips: off (user 01.11.)
   questSellCoin = false, -- gold coin on the quest reward with the best sell price: on (user 02.11.)
   infoBarScale = 100, -- info bar size in % (6.2.2, slider; 100 = as before)

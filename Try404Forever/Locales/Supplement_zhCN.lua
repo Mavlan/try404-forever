@@ -3540,4 +3540,8 @@ FLT.SUPPLEMENT_LOCALES.zhCN = function() return {
 ["Atal'ai statue %s"]="阿塔莱雕像%s",
 ["Use the six statues in this order (1 to 6) to summon Atal'alarion."]="按1至6的顺序使用六座雕像，召唤阿塔拉利恩。",
 ["%d min"]="%d分钟",
+["New dungeon maps"]="新增地下城地图",
+["Open Dungeons"]="打开地下城",
+["Dungeon maps are now available for Alcaz Prison, The Drowned City, Krol'dok Stronghold, Blackmaw Hold and Shaper's Terrace."]="新增奥卡兹监狱、沉没之城、克罗多克要塞、黑喉要塞和塑造者露台地图。",
+["Switch floors on multi-level maps and click a boss to see its loot. Boss locations are approximate."]="多层地图可切换楼层，点击首领可查看掉落。首领位置为近似值。",
 } end

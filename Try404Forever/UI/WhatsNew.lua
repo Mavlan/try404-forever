@@ -18,29 +18,26 @@ local NEWS_AUTO = true -- set true (and a new NEWS_ID) for the next release with
 -- 6.2.12 (user 19.11.): Guild Games with special thanks to Gaelda, Ritter Roulade and Deaders, and "Smaller changes"
 -- (Skill-Up changes, low level quests, walking routes) - shown automatically once.
 -- 6.2.13 (user 21.11.): BiS List, Cheap Upgrades with the Cheap Upgrade Scan, the new stat weights - shown automatically once.
-local NEWS_ID = "6.2.13.1"
+local NEWS_ID = "6.2.13.2"
 
 -- images (optional): pictures in a row under the lines, each { tex, shown width, shown height, texcoord right,
 -- texcoord bottom } (made by tools/art/proc_news.py from the user's screenshots in source_images/news)
 -- qol = the Quality of Life group the button opens; shot = a screenshot behind a "Show me" button (user 09.11.):
 -- { texture, shown width, shown height, texcoord right, texcoord bottom } (tools/art/proc_news.py)
 local NEWS = {
-  { icon = "Interface\\Icons\\INV_Sword_39", title = N"BiS List", tab = "armory", button = N"Open Armory",
+  { icon = "Interface\\Icons\\INV_Misc_Map_01", title = N"New dungeon maps", tab = "dungeons", button = N"Open Dungeons",
     lines = {
-      N"Armory > Gear Planner > BiS List: the best items per slot before raids for every class and spec, from the WoW Forever BiS lists of wowtbc.gg.",
-      N"Your class and spec are picked at first, and every item shows where you get it. More lists will follow.",
-    } },
-  { icon = "Interface\\Icons\\INV_Misc_Coin_02", title = N"Cheap Upgrades", tab = "armory", button = N"Open Armory",
-    lines = {
-      N"Armory > Gear Planner > Cheap Upgrades: Bind on Equip gear from the auction house that improves your gear, up to a highest price you set.",
-      N"Click \"Cheap Upgrade Scan\" in the auction house: it reads all auctions, also items with a random bonus (\"of the Eagle\"), each with its own price.",
-    } },
-  { icon = "Interface\\Icons\\INV_Misc_Spyglass_02", title = N"New stat weights", tab = "qol", qol = "tips", button = N"Open Quality of Life",
-    lines = {
-      N"The Gear Value uses new stat weights for every class and spec (from Geared Forever).",
-      N"Quality of Life > Tooltips > \"Gear Value shows\": the change for your whole gear, item against item, or both.",
+      N"Dungeon maps are now available for Alcaz Prison, The Drowned City, Krol'dok Stronghold, Blackmaw Hold and Shaper's Terrace.",
+      N"Switch floors on multi-level maps and click a boss to see its loot. Boss locations are approximate.",
     } },
 }
+if GetLocale and GetLocale() == "zhCN" then
+  NEWS[#NEWS + 1] = { icon = "Interface\\Icons\\INV_Misc_Campfire", title = "帐篷主人自动密语", tab = "qol", qol = "social", button = N"Open Quality of Life",
+    lines = {
+      "仅限中国服简体中文客户端：选中其他玩家的帐篷时，显示主人并尝试自动发送蹭帐篷请求。",
+      "入口：便利功能 → 社交 → 帐篷。功能默认关闭，开启后使用。",
+    } }
+end
 
 local frame
 

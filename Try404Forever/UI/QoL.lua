@@ -701,6 +701,10 @@ local function createQoLPanel(parent)
 
   -- SOCIAL
   c = category("social", N"Social", "Interface\\Icons\\INV_Letter_15", N"Group invites, duels and recipe sharing.")
+  if GetLocale and GetLocale() == "zhCN" then
+    g = group(c, "帐篷")
+    check(g, "帐篷主人自动密语", "选中他人的帐篷时显示主人，并自动发送蹭帐篷请求。", "仅简体中文客户端可用；识别不到主人时不会发送。同一主人 30 秒内只请求一次。", "tentWhisperCN")
+  end
   g = group(c, N"Groups")
   choice(g, N"Group invites from", N"Accepts group invites from the players you choose.", N"Off: OneForAll does nothing with invites.", "inviteMode", Q.WHO_OPTIONS, "inviteOn")
   choice(g, N"Keyword invites from", N"Invites players who whisper you the keyword.", N"Off: OneForAll does nothing with whispers.", "keywordMode", Q.WHO_OPTIONS, "keywordOn")
