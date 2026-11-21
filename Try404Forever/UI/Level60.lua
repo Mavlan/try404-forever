@@ -31,7 +31,7 @@ local function chapters()
       {T("Other useful keys", "其他钥匙", "其他鑰匙"),T("The Shadowforge Key helps in Blackrock Depths, and the Scepter of Celebras provides a Maraudon shortcut. Some keys are optional; ask your group before planning a run.", "暗炉钥匙有助于探索黑石深渊；塞雷布拉斯节杖可用于玛拉顿的捷径。有些钥匙并非人人必备，出发前先问队友。", "暗爐鑰匙有助於探索黑石深淵；塞雷布拉斯節杖可用於瑪拉頓的捷徑。有些鑰匙並非人人必備，出發前先問隊友。")},
     }},
     { key="weekly", icon="INV_Misc_Bag_10", title=T("Weekly and currency", "周常与代币", "週常與代幣"), entries={
-      {T("Booty Bay weekly", "藏宝海湾周常", "藏寶海灣週常"),T("Look for Pix Xizzix near the Booty Bay auction house. Current guides describe a weekly task involving the three Dire Maul wings. Read the NPC's current objective and reward before setting out.", "可到藏宝海湾拍卖行附近找 Pix Xizzix。现有攻略记载他有涉及厄运之槌三个区域的每周任务；出发前请先核对 NPC 当前显示的目标和奖励。", "可到藏寶海灣拍賣場附近找 Pix Xizzix。現有攻略記載他有涉及厄運之槌三個區域的每週任務；出發前請先核對 NPC 目前顯示的目標和獎勵。")},
+      {T("Booty Bay weekly", "藏宝海湾周常", "藏寶海灣週常"),T("Look for Pix Xizzix near the Booty Bay auction house. Weekly dungeon objectives rotate. Read the NPC's current objective and reward before setting out.", "可到藏宝海湾拍卖行附近找 Pix Xizzix。每周副本任务的目标会轮换；出发前请先核对 NPC 当前显示的目标和奖励。", "可到藏寶海灣拍賣場附近找 Pix Xizzix。每週地城任務的目標會輪換；出發前請先核對 NPC 目前顯示的目標和獎勵。")},
       {T("Dungeon currency", "副本代币", "地城代幣"),T("The same NPC is listed as a vendor for high-level dungeon currency. Drops, stock and prices may change: verify in game before farming or buying.", "攻略记载这名 NPC 也提供高等级副本代币兑换。掉落、商品与价格可能调整，请在游戏内确认后再刷取或购买。", "攻略記載這名 NPC 也提供高等級地城代幣兌換。掉落、商品與價格可能調整，請在遊戲內確認後再刷取或購買。")},
     }},
     { key="prof", icon="Trade_BlackSmithing", title=T("Professions", "专业与金币", "專業與金幣"), entries={
@@ -70,12 +70,139 @@ local function createPanel(parent)
   local sf=FLT.SkinBlizz(CreateFrame("ScrollFrame",nil,body,"UIPanelScrollFrameTemplate"))
   sf:SetPoint("TOPLEFT",10,-8);sf:SetPoint("BOTTOMRIGHT",-28,8);UI.AutoHideScrollBar(sf)
   local content=CreateFrame("Frame",nil,sf);content:SetSize(730,1);sf:SetScrollChild(content)
-  local sections=chapters();local rows,buttons={},{};local selected=1
+  local sections=chapters();local rows,buttons={},{};local selected=0
+  local paint
   local function fs(owner,font,x,y,width)
     local t=owner:CreateFontString(nil,"OVERLAY",font);t:SetPoint("TOPLEFT",x,y);t:SetWidth(width);t:SetJustifyH("LEFT");t:SetWordWrap(true);return t
   end
   local heading=fs(content,"GameFontNormalLarge",6,-4,700)
   local hint=fs(content,"GameFontHighlightSmall",6,-28,700)
+  -- A compact endgame landing page built from existing in-game and addon data.
+  local home=CreateFrame("Frame",nil,content);home:SetPoint("TOPLEFT",0,0);home:SetSize(700,700)
+  -- Reflow horizontally as the window changes size without scaling fonts or artwork vertically.
+  local homeLayout={}
+  local function reflow(f) homeLayout[#homeLayout+1]=f end
+  local function box(parent,x,y,w,h)
+    local f=CreateFrame("Frame",nil,parent);f:SetPoint("TOPLEFT",x,y);f:SetSize(w,h)
+    reflow(function(scale) f:ClearAllPoints();f:SetPoint("TOPLEFT",x*scale,y);f:SetWidth(w*scale) end)
+    local bg=f:CreateTexture(nil,"BACKGROUND");bg:SetAllPoints();bg:SetColorTexture(0.10,0.085,0.065,0.96)
+    if UI.RoundRect and UI.ASSET_ROOT then UI.RoundRect(f,f,"BORDER",0,6,0,0.45,0.34,0.17,0.9,UI.ASSET_ROOT.."window_ring") end
+    return f
+  end
+  local function label(parent,font,text,x,y,w)
+    local t=fs(parent,font,x,y,w);t:SetText(text)
+    reflow(function(scale) t:ClearAllPoints();t:SetPoint("TOPLEFT",x*scale,y);t:SetWidth(w*scale) end)
+    return t
+  end
+  local ATLAS=UI.ASSET_ROOT.."level60_scenes"
+  local function scene(parent,col,row,x,y,w,h)
+    local art=parent:CreateTexture(nil,"ARTWORK");art:SetPoint("TOPLEFT",x,y);art:SetSize(w,h);FLT.SetTex(art,ATLAS)
+    reflow(function(scale) art:ClearAllPoints();art:SetPoint("TOPLEFT",x*scale,y);art:SetWidth(w*scale) end)
+    local pad=0.002;art:SetTexCoord(col/3+pad,(col+1)/3-pad,row/2+pad,(row+1)/2-pad)
+    return art
+  end
+  local function dim(parent,x,y,w,h,alpha)
+    local overlay=parent:CreateTexture(nil,"ARTWORK",nil,1);overlay:SetPoint("TOPLEFT",x,y);overlay:SetSize(w,h);overlay:SetColorTexture(0.025,0.020,0.014,alpha or 0.8)
+    reflow(function(scale) overlay:ClearAllPoints();overlay:SetPoint("TOPLEFT",x*scale,y);overlay:SetWidth(w*scale) end)
+    return overlay
+  end
+  local function detail(parent,text,x,y,w)
+    return label(parent,"GameFontHighlightSmall",text,x,y,w)
+  end
+  local function goChapter(key)
+    for i,c in ipairs(sections) do if c.key==key then selected=i;sf:SetVerticalScroll(0);paint();return end end
+  end
+  local hero=box(home,0,0,700,70)
+  local backdrop=scene(hero,2,1,420,-2,278,66);backdrop:SetAlpha(0.55)
+  dim(hero,360,-2,338,66,0.40)
+  local crest=hero:CreateTexture(nil,"OVERLAY");crest:SetPoint("TOPLEFT",12,-11);crest:SetSize(42,42);FLT.SetTex(crest,UI.ASSET_ROOT.."faction_crests")
+  local portrait=hero:CreateTexture(nil,"OVERLAY");portrait:SetPoint("TOPLEFT",60,-9);portrait:SetSize(48,48)
+  label(hero,"GameFontNormalLarge",T("Level 60 adventure","满级冒险","滿級冒險"),120,-11,205)
+  local character=label(hero,"GameFontHighlightSmall","",120,-40,225)
+  character:SetWordWrap(false)
+  label(hero,"GameFontNormal",T("Your next adventure awaits","欢迎回到艾泽拉斯！","歡迎回到艾澤拉斯！"),356,-13,320)
+  detail(hero,T("Explore dungeons, quests and rewards.","副本、任务、声望与更多冒险。","地城、任務、聲望與更多冒險。"),356,-38,320)
+  local dungeonGroup=box(home,0,-80,460,258)
+  label(dungeonGroup,"GameFontNormalLarge",T("Recommended dungeons","推荐地下城","推薦地城"),12,-11,240)
+  detail(dungeonGroup,T("Explore loot and quests","查看掉落与任务","查看掉落與任務"),225,-13,220)
+  local weeklyGroup=box(home,470,-80,230,258)
+  label(weeklyGroup,"GameFontNormalLarge",T("Weekly activities","本周活动","本週活動"),12,-11,205)
+  detail(weeklyGroup,T("Level 60 activities","满级每周活动","滿級每週活動"),12,-37,200)
+  local picks={"Blackrock Depths","Scholomance","Stratholme"}
+  local function findDungeon(name)
+    for _,d in ipairs(FLT.DUNGEONS or {}) do if d.name==name then return d end end
+  end
+  local function openDungeon(name)
+    local d=findDungeon(name);if not d or not FLT.OpenPanel then return end
+    FLT:OpenPanel("dungeons");if UI.OpenDungeon then UI.OpenDungeon(d) end
+  end
+  for i,name in ipairs(picks) do
+    local d=findDungeon(name);local c=box(dungeonGroup,8+(i-1)*149,-43,146,206)
+    scene(c,i-1,0,3,-3,140,141);dim(c,3,-91,140,53,0.84)
+    label(c,"GameFontNormal",(FLT.DungeonName and FLT.DungeonName(name)) or name,9,-98,128)
+    detail(c,T("Level ","等级 ","等級 ")..(d and d.level or "?"),9,-120,128)
+    detail(c,T("Loot · quests","装备 · 任务","裝備 · 任務"),9,-151,128)
+    local b=UI.GoldButton(c,T("View dungeon","查看副本","查看地城"),128,23);b:SetPoint("BOTTOM",0,7)
+    if not d then b:Disable() else b:SetScript("OnClick",function() openDungeon(name) end) end
+  end
+  local week=box(weeklyGroup,8,-59,214,190)
+  local weeklyIcon=week:CreateTexture(nil,"ARTWORK");weeklyIcon:SetPoint("TOPLEFT",9,-11);weeklyIcon:SetSize(40,40);weeklyIcon:SetTexture("Interface\\Icons\\INV_Misc_Coin_01")
+  label(week,"GameFontNormal",T("Booty Bay weekly","藏宝海湾周常","藏寶海灣週常"),57,-12,145)
+  detail(week,((FLT.Name and FLT.Name("Pix Xizzix")) or "Pix Xizzix").." · "..T("Booty Bay","藏宝海湾","藏寶海灣"),57,-36,145)
+  detail(week,T("Weekly dungeon objectives rotate. Check the current quest in game.","周常目标会轮换，请以游戏内任务为准。","週常目標會輪換，請以遊戲內任務為準。"),12,-66,190)
+  detail(week,T("Location: Booty Bay (28.5, 75.9)","位置：藏宝海湾 (28.5, 75.9)","位置：藏寶海灣 (28.5, 75.9)"),12,-112,190)
+  local wb=UI.GoldButton(week,T("Map","地图","地圖"),91,23);wb:SetPoint("BOTTOMLEFT",9,9)
+  wb:SetScript("OnClick",function() FLT:ShowOnMap({mapID=1434,x=28.5,y=75.9,name=(FLT.Name and FLT.Name("Pix Xizzix")) or "Pix Xizzix"}) end)
+  local wdetail=UI.GoldButton(week,T("Details","查看详情","查看詳情"),98,23);wdetail:SetPoint("BOTTOMRIGHT",-9,9);wdetail:SetScript("OnClick",function() goChapter("weekly") end)
+  local zonesGroup=box(home,0,-348,460,184)
+  label(zonesGroup,"GameFontNormalLarge",T("Explore zones","探索地图","探索地圖"),12,-10,205)
+  detail(zonesGroup,T("Quests, reputation and resources","任务、声望与资源","任務、聲望與資源"),200,-12,240)
+  local zones={
+    {id=1422,en="Western Plaguelands",cn="西瘟疫之地",tw="西瘟疫之地",art=0},
+    {id=1448,en="Felwood",cn="费伍德森林",tw="費伍德森林",art=1},
+  }
+  local function openZone(id)
+    if InCombatLockdown and InCombatLockdown() then return end
+    if WorldMapFrame and WorldMapFrame.SetMapID then
+      if not WorldMapFrame:IsShown() then WorldMapFrame:Show() end
+      WorldMapFrame:SetMapID(id)
+    elseif C_Map and C_Map.OpenWorldMap then C_Map.OpenWorldMap(id) end
+  end
+  for i,z in ipairs(zones) do
+    local c=box(zonesGroup,8+(i-1)*225,-39,220,135)
+    scene(c,z.art,1,3,-3,214,129);dim(c,3,-60,214,72,0.80)
+    label(c,"GameFontNormal",T(z.en,z.cn,z.tw),10,-65,200)
+    detail(c,T("Explore quests and reputation","探索任务与声望","探索任務與聲望"),10,-87,200)
+    local b=UI.GoldButton(c,T("Map","地图","地圖"),82,22);b:SetPoint("BOTTOMRIGHT",-7,7);b:SetScript("OnClick",function() openZone(z.id) end)
+  end
+  local prep=box(home,470,-348,230,184)
+  label(prep,"GameFontNormalLarge",T("Character preparation","角色准备","角色準備"),12,-10,205)
+  local actions={
+    {T("Gear planner","装备规划","裝備規劃"),"INV_Chest_Plate01",function() if FLT.OpenPanel then FLT:OpenPanel("armory") end end},
+    {T("Reputation","声望","聲望"),"INV_Misc_Ribbon_01",function() goChapter("rep") end},
+    {T("Dungeon keys","副本钥匙","地城鑰匙"),"INV_Misc_Key_14",function() goChapter("keys") end},
+  }
+  for i,a in ipairs(actions) do
+    local item=box(prep,8,-40-(i-1)*45,214,40)
+    local icon=item:CreateTexture(nil,"ARTWORK");icon:SetPoint("LEFT",6,0);icon:SetSize(29,29);icon:SetTexture("Interface\\Icons\\"..a[2])
+    local b=UI.GoldButton(item,a[1],160,26);b:SetPoint("RIGHT",-6,0);b:SetScript("OnClick",a[3])
+  end
+  local function refreshHome()
+    local name=(UnitName and UnitName("player")) or "?";local level=(UnitLevel and UnitLevel("player")) or "?"
+    local class=(UnitClass and UnitClass("player")) or "";local faction=UnitFactionGroup and UnitFactionGroup("player")
+    local side=faction=="Horde" and T("Horde","部落","部落") or faction=="Alliance" and T("Alliance","联盟","聯盟") or ""
+    character:SetText(name.." · "..T("Level ","等级 ","等級 ")..level.." · "..class)
+    if faction=="Horde" then crest:SetTexCoord(0.25,0.5,0,1) else crest:SetTexCoord(0,0.25,0,1) end
+    if SetPortraitTexture then pcall(SetPortraitTexture,portrait,"player") else portrait:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark") end
+  end
+  local function layoutHome()
+    local width=sf:GetWidth()
+    if type(width)~="number" or width<100 then width=700 end
+    content:SetWidth(width);home:SetWidth(width)
+    local scale=width/700
+    for _,apply in ipairs(homeLayout) do apply(scale) end
+  end
+  sf:HookScript("OnSizeChanged",function() if selected==0 then layoutHome() end end)
   local function row(i)
     if rows[i] then return rows[i] end
     local r=CreateFrame("Frame",nil,content);r:SetWidth(700)
@@ -84,7 +211,14 @@ local function createPanel(parent)
     r.map=UI.GoldButton(r,L["Map"],64,22);r.map:SetPoint("TOPRIGHT",-10,-8)
     rows[i]=r;return r
   end
-  local function paint()
+  paint=function()
+    for _,r in ipairs(rows) do r:Hide() end
+    if selected==0 then
+      heading:Hide();hint:Hide();home:Show();refreshHome();layoutHome();content:SetHeight(545)
+      for i,b in ipairs(buttons) do b:SetActive(i==1) end
+      return
+    end
+    home:Hide();content:SetWidth(730);heading:Show();hint:Show()
     local chapter=sections[selected];heading:SetText(chapter.title)
     hint:SetText(T("Practical notes for level 60. Verify quest requirements and rewards in game.","60 级实用指南；任务条件和奖励以游戏内为准。","60 級實用指南；任務條件和獎勵以遊戲內為準。"))
     for _,r in ipairs(rows) do r:Hide() end
@@ -123,16 +257,18 @@ local function createPanel(parent)
       else r.map:Hide() end
     end
     content:SetHeight(math.max(1,-yy+15))
-    for i,b in ipairs(buttons) do b:SetActive(i==selected) end
+    for i,b in ipairs(buttons) do b:SetActive(i==selected+1) end
   end
+  local homeButton;homeButton,y=UI.NavEntry(nav,y,T("Overview","冒险首页","冒險首頁"),"Interface\\Icons\\INV_Misc_Map_01")
+  homeButton:SetScript("OnClick",function() selected=0;sf:SetVerticalScroll(0);paint() end);buttons[1]=homeButton
   for i,c in ipairs(sections) do
     local b;b,y=UI.NavEntry(nav,y,c.title,"Interface\\Icons\\"..c.icon)
-    b:SetScript("OnClick",function() selected=i;sf:SetVerticalScroll(0);paint() end);buttons[i]=b
+    b:SetScript("OnClick",function() selected=i;sf:SetVerticalScroll(0);paint() end);buttons[i+1]=b
   end
   function panel:Refresh() if self:IsVisible() then paint() end end
   local ev=CreateFrame("Frame",nil,panel)
   for _,e in ipairs({"QUEST_TURNED_IN","QUEST_ACCEPTED","QUEST_REMOVED"}) do pcall(ev.RegisterEvent,ev,e) end
-  ev:SetScript("OnEvent",function() if panel:IsVisible() and sections[selected].key=="onyxia" then paint() end end)
+  ev:SetScript("OnEvent",function() if panel:IsVisible() and selected>0 and sections[selected].key=="onyxia" then paint() end end)
   paint();panel:Hide();return panel
 end
 

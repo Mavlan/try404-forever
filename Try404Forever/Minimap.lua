@@ -81,6 +81,13 @@ function FLT.ApplyLogoColor()
   if FLT.collectorIcon then FLT.collectorIcon:SetTexture(FLT.LogoTexture("card")); FLT.TintLogo(FLT.collectorIcon) end
   if FLT.trainerTabIcon then FLT.trainerTabIcon:SetTexture(FLT.LogoTexture("round")); FLT.TintLogo(FLT.trainerTabIcon) end
   if FLT.collectorHi then FLT.collectorHi:SetTexture(FLT.LogoTexture("card")); FLT.TintLogo(FLT.collectorHi) end
+  -- the LibDBIcon button that replaces ours with Leatrix Plus (6.2.13-beta23, Discord deyreth_redrock 21.11.: "can't change color
+  -- of minimap button" - guessed cause: it always showed its own fixed picture); LibDataBroker passes the new icon on
+  if FLT.ldbObj then
+    FLT.ldbObj.icon = FLT.LogoTexture("card")
+    local b = FLT.ldbIcon and FLT.ldbIcon.GetMinimapButton and FLT.ldbIcon:GetMinimapButton("Try404Guide")
+    if b and b.icon then FLT.TintLogo(b.icon) end
+  end
 end
 -- QoL "logoSize" (6.2.11, user 17.11.): size of the OneForAll minimap button and of the collector button, 60 - 150 %.
 -- Sizes, not SetScale: the minimap button keeps its centre on the ring (positionButton), the collector its corner.
@@ -200,10 +207,13 @@ function FLT.RegisterLDBIcon()
     end,
   })
   if not obj then return false end
+  FLT.ldbObj = obj
   if type(OneForAllDB) ~= "table" then return false end
   OneForAllDB.ldbIcon = OneForAllDB.ldbIcon or {}
   if not pcall(LDBI.Register, LDBI, "Try404Guide", obj, OneForAllDB.ldbIcon) then return false end
   FLT.ldbIcon = LDBI
+  local b = LDBI.GetMinimapButton and LDBI:GetMinimapButton("Try404Guide")
+  if b and b.icon then FLT.TintLogo(b.icon) end -- bronze
   return LDBI
 end
 -- registered as early as possible (when our saved variables are there), so Leatrix Plus finds the button when it gathers

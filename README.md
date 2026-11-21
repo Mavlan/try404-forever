@@ -10,6 +10,6 @@ TRY404 is an independently maintained community fork of [OneForAll - Forever](ht
 
 ## 来源与许可
 
-基于 OneForAll 6.2.12（上游提交 `53d072735e293dda14f664424724e62a8ccda465`）修改，保留原作者版权及 GPL-3.0-or-later 许可。第三方内容请参阅 [许可与署名](Try404Forever/THIRD_PARTY_LICENSES.txt)、[源码和素材说明](Try404Forever/SOURCE-NOTICES.txt) 及 [副本数据来源](Try404Forever/DUNGEON_DATA_SOURCES.txt)。
+基于 OneForAll 6.2.13（上游提交 `7e1466f7b636442d38a432d667a46ad26bda1f9b`）修改，保留原作者版权及 GPL-3.0-or-later 许可。第三方内容请参阅 [许可与署名](Try404Forever/THIRD_PARTY_LICENSES.txt)、[源码和素材说明](Try404Forever/SOURCE-NOTICES.txt) 及 [副本数据来源](Try404Forever/DUNGEON_DATA_SOURCES.txt)。
 
 OneForAll-derived code is licensed under GPL-3.0-or-later; third-party materials retain their own licenses. See [LICENSE](LICENSE) and the notices above. World of Warcraft assets and trademarks belong to their respective owners.
