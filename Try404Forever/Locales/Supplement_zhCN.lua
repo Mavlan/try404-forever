@@ -3544,4 +3544,5 @@ FLT.SUPPLEMENT_LOCALES.zhCN = function() return {
 ["Open Dungeons"]="打开地下城",
 ["Dungeon maps are now available for Alcaz Prison, The Drowned City, Krol'dok Stronghold, Blackmaw Hold and Shaper's Terrace."]="新增奥卡兹监狱、沉没之城、克罗多克要塞、黑喉要塞和塑造者露台地图。",
 ["Switch floors on multi-level maps and click a boss to see its loot. Boss locations are approximate."]="多层地图可切换楼层，点击首领可查看掉落。首领位置为近似值。",
+["Naxxramas"]="纳克萨玛斯",
 } end

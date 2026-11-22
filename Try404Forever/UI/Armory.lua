@@ -159,7 +159,14 @@ local function standingLabel(st)
   return _G["FACTION_STANDING_LABEL" .. st] or (RANK_LABEL[st - 1] and L[RANK_LABEL[st - 1]]) or tostring(st)
 end
 -- shown faction name: the client's (localized) one when ClientTexts, else ours
-local function factionName(f, clientName) return (clientName and FLT.ClientTexts and FLT.ClientTexts()) and clientName or f.n end
+local function factionName(f, clientName)
+  local fallback = (FLT.Name and FLT.Name(f.n)) or f.n
+  if clientName and FLT.ClientTexts and FLT.ClientTexts() then
+    if FLT.Language and (FLT.Language() == "zhCN" or FLT.Language() == "zhTW") and not clientName:find("[\128-\255]") and fallback ~= f.n then return fallback end
+    return clientName
+  end
+  return fallback
+end
 
 -- Set name and bonuses in the client's language (beta12): read once from the tooltip of the set's first piece
 -- ("Name (0/6)", "(2) Set: ...", worn bonuses as "Set: ..."); nil until the item is loaded or when ClientTexts is off
@@ -220,15 +227,26 @@ local function sourceText(src)
   local prof = src:match("^Crafted: (.+)$")
   if prof then return string.format(L["Crafted: %s"], L[prof]) end
   local q = src:match("^Quest: (.+)$")
-  if q then return string.format(L["Quest: %s"], (FLT.Name and FLT.Name(q)) or q) end
+  if q then
+    local who, place = q:match("^(.-) %((.-)%)$")
+    if who and place then q = (FLT.Name and FLT.Name(who) or who) .. " (" .. (FLT.DungeonName and FLT.DungeonName(place) or place) .. ")"
+    else q = (FLT.Name and FLT.Name(q)) or q end
+    return string.format(L["Quest: %s"], q)
+  end
+  local faction, rank = src:match("^(.-): (.+)$")
+  if rank ~= "Friendly" and rank ~= "Honored" and rank ~= "Revered" and rank ~= "Exalted" then faction = nil end
+  if faction then return (FLT.Name and FLT.Name(faction) or faction) .. ": " .. L[rank] end
   local dungeon, boss = src:match("^(.-) %- (.+)$")
   if dungeon then
     local dn = sectionText(dungeon)
     local bn = boss == "trash mobs" and L["Trash"] or ((FLT.Name and FLT.Name(boss)) or boss)
     return dn .. " - " .. bn
   end
+  local place, other = src:match("^(.-) %((.-)%)$")
+  if place and other then return sectionText(place) .. " (" .. (FLT.Name and FLT.Name(other) or other) .. ")" end
   return sectionText(src)
 end
+FLT.ArmorySourceText = sourceText
 -- item ranks use 0-7 (4 = Friendly); the client's standingID is 1-8
 local function rankReached(rank, st) return st and (st - 1) >= rank end
 

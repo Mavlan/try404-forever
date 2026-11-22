@@ -213,6 +213,52 @@ end
 local function idList(str) local o = {}; for v in str:gmatch("%d+") do o[#o + 1] = tonumber(v) end return o end
 -- quest and giver names in the client's language (6.2.0 step 2b; FLT.Name from Locales/Locale.lua)
 local function NM(s) return FLT.Name and FLT.Name(s) or s end
+-- Data/Enchants.lua stat summaries use compact English labels. Translate only for Chinese interfaces;
+-- the original text and numbers remain the source for scores and game mechanics.
+local enchantTerms = {
+  { "Weapon Chain - Immune Disarm", "武器链 - 免疫缴械", "武器鍊 - 免疫繳械" },
+  { "Minor Mount Speed Increase", "略微提高坐骑速度", "略微提高坐騎速度" },
+  { "Minor Speed Increase", "略微提高移动速度", "略微提高移動速度" },
+  { "Spell Critical Strike", "法术暴击", "法術致命一擊" }, { "Ranged Attack Power", "远程攻击强度", "遠程攻擊強度" },
+  { "Mana per 5 sec", "每5秒法力回复", "每5秒法力回復" }, { "All Resistances", "所有抗性", "所有抗性" },
+  { "Arcane Resistance", "奥术抗性", "秘法抗性" }, { "Fire Resistance", "火焰抗性", "火焰抗性" },
+  { "Frost Resistance", "冰霜抗性", "冰霜抗性" }, { "Nature Resistance", "自然抗性", "自然抗性" },
+  { "Shadow Resistance", "暗影抗性", "暗影抗性" }, { "Weapon Damage", "武器伤害", "武器傷害" },
+  { "Attack Speed", "攻击速度", "攻擊速度" }, { "Critical Strike", "暴击", "致命一擊" },
+  { "Spell Damage", "法术伤害", "法術傷害" }, { "Spell Power", "法术强度", "法術強度" },
+  { "Attack Power", "攻击强度", "攻擊強度" }, { "Arcane Damage", "奥术伤害", "秘法傷害" },
+  { "Fire Damage", "火焰伤害", "火焰傷害" }, { "Frost Damage", "冰霜伤害", "冰霜傷害" },
+  { "Nature Damage", "自然伤害", "自然傷害" }, { "Shadow Damage", "暗影伤害", "暗影傷害" },
+  { "Holy Damage", "神圣伤害", "神聖傷害" }, { "Block Value", "格挡值", "格擋值" },
+  { "All Stats", "所有属性", "所有屬性" }, { "Spell Hit", "法术命中", "法術命中" },
+  { "Increased Stealth", "提高潜行", "提高潛行" }, { "Speed Increase", "提高移动速度", "提高移動速度" },
+  { "Elemental Slayer", "元素杀手", "元素殺手" }, { "Beastslaying", "屠兽", "屠獸" },
+  { "Demonslaying", "屠魔", "屠魔" }, { "Lesser Absorption", "次级吸收", "次級吸收" },
+  { "Minor Absorption", "初级吸收", "初級吸收" }, { "Absorption", "吸收", "吸收" },
+  { "Fiery Weapon", "灼热武器", "熾熱武器" }, { "Icy Weapon", "寒冰武器", "冰寒武器" },
+  { "Unholy Weapon", "邪恶武器", "邪惡武器" }, { "Lifestealing", "生命偷取", "生命偷取" },
+  { "Mithril Spurs", "秘银马刺", "秘銀馬刺" }, { "Mithril Spike", "秘银盾刺", "秘銀盾刺" },
+  { "Thorium Spike", "瑟银盾刺", "瑟銀盾刺" }, { "Iron Spike", "铁质盾刺", "鐵製盾刺" },
+  { "Lotus Claw", "莲花利爪", "蓮花利爪" }, { "Crusader", "十字军", "十字軍" },
+  { "Revelation", "启示", "啟示" }, { "Recovery", "恢复", "恢復" }, { "Insight", "洞察", "洞察" },
+  { "Subtlety", "潜行", "潛行" }, { "Herbalism", "草药学", "草藥學" },
+  { "Skinning", "剥皮", "剝皮" }, { "Fishing", "钓鱼", "釣魚" }, { "Mining", "采矿", "採礦" },
+  { "Stamina", "耐力", "耐力" }, { "Intellect", "智力", "智力" }, { "Strength", "力量", "力量" },
+  { "Agility", "敏捷", "敏捷" }, { "Spirit", "精神", "精神" }, { "Defense", "防御", "防禦" },
+  { "Healing", "治疗", "治療" }, { "Health", "生命值", "生命值" }, { "Armor", "护甲", "護甲" },
+  { "Dodge", "躲闪", "閃躲" }, { "Block", "格挡", "格擋" }, { "Threat", "威胁值", "仇恨值" },
+  { "Mana", "法力", "法力" }, { "Hit", "命中", "命中" },
+}
+table.sort(enchantTerms, function(a, b) return #a[1] > #b[1] end)
+local function enchantSummary(text)
+  if type(text) ~= "string" then return text end
+  local lang = FLT.Language and FLT.Language() or "enUS"
+  if lang ~= "zhCN" and lang ~= "zhTW" then return text end
+  local translated = FLT.LNum and FLT.LNum(text) or text
+  for _, term in ipairs(enchantTerms) do translated = translated:gsub(term[1]:gsub("([^%w])", "%%%1"), term[lang == "zhTW" and 3 or 2]) end
+  return translated
+end
+FLT.EnchantSummary = enchantSummary
 function FLT.QuestInfo(qid)
   if not qid then return nil end
   local c = questCache[qid]
@@ -400,14 +446,17 @@ local function buildIndex()
   -- (st 0) are not suggested (6.2.12, Discord Dannie 18.11.)
   for _, s in ipairs(FLT.ARMORY_SETS or {}) do
     if s.st == 1 then
-      for _, it in ipairs(s.i or {}) do add(it[1], it[2], it[4], (type(it[6]) == "table" and it[6][1]) or s.n, s.lv) end
+      for _, it in ipairs(s.i or {}) do
+        local source = (type(it[6]) == "table" and it[6][1]) or s.n
+        add(it[1], it[2], it[4], FLT.ArmorySourceText and FLT.ArmorySourceText(source) or NM(source), s.lv)
+      end
     end
   end
   local RANK = { [4] = L["Friendly"], [5] = L["Honored"], [6] = L["Revered"], [7] = L["Exalted"] }
   for _, f in ipairs(FLT.ARMORY_REPUTATION or {}) do
     if f.st ~= 0 then
       for _, it in ipairs(f.i or {}) do
-        if it[7] == "gear" then add(it[1], it[2], it[4], f.n .. (RANK[it[6]] and (" (" .. RANK[it[6]] .. ")") or ""), nil) end
+        if it[7] == "gear" then add(it[1], it[2], it[4], NM(f.n) .. (RANK[it[6]] and (" (" .. RANK[it[6]] .. ")") or ""), nil) end
       end
     end
   end
@@ -1594,7 +1643,7 @@ function UI.CreateGearPlanner(parent)
       local ok = false
       if o.i then ok = pcall(GameTooltip.SetHyperlink, GameTooltip, "item:" .. o.i)
       elseif o.s and GameTooltip.SetSpellByID then ok = pcall(GameTooltip.SetSpellByID, GameTooltip, o.s) end
-      if not ok then GameTooltip:AddLine(o.n or "", 1, 1, 1) end
+      if not ok then GameTooltip:AddLine(NM(o.n or ""), 1, 1, 1) end
       local ce = FLT.ENCHANTS and FLT.ENCHANTS[o.e]
       if ce then GameTooltip:AddLine(ce[1], 0.4, 1, 0.4, true) end
       if self.where then GameTooltip:AddLine(self.where, 1, 0.82, 0, true) end
@@ -1652,7 +1701,7 @@ function UI.CreateGearPlanner(parent)
       local r = erow(i); r.o = o
       r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, y); r:SetPoint("RIGHT", child, "RIGHT", -2, 0); r:Show(); y = y - 44
       r.icon:SetTexture(enchantIcon(o) or "Interface\\Icons\\Trade_Engraving"); FLT.Desat(r.icon, o.st == 0)
-      r.name:SetText(o.n or "")
+      r.name:SetText(NM(o.n or ""))
       if o.st == 0 then r.name:SetTextColor(0.62, 0.60, 0.56) else r.name:SetTextColor(FLT.SkinC(1, 0.93, 0.66)) end
       local ce = FLT.ENCHANTS and FLT.ENCHANTS[o.e]
       local where
@@ -1663,10 +1712,10 @@ function UI.CreateGearPlanner(parent)
         if known then where = where .. "  |cff40ff40" .. L["(you know it)"] .. "|r"
         elseif other then where = where .. "  |cff8fd0ff" .. L["(an alt knows it)"] .. "|r"
         elseif guild then where = where .. "  |cffffd35a" .. L["(your guild)"] .. "|r" end
-      elseif o.src then where = o.src .. (o.st == 0 and ("  |cff9d9d9d" .. L["(not in Forever yet)"] .. "|r") or "") end
+      elseif o.src then where = (FLT.ArmorySourceText and FLT.ArmorySourceText(o.src) or NM(o.src)) .. (o.st == 0 and ("  |cff9d9d9d" .. L["(not in Forever yet)"] .. "|r") or "") end
       r.where = where
       local parts = {}
-      if ce and not o.worn then parts[#parts + 1] = ce[1] end
+      if ce and not o.worn then parts[#parts + 1] = enchantSummary(ce[1]) end
       if where then parts[#parts + 1] = where end
       r.sub:SetText(table.concat(parts, "  ·  "))
       if o.e == cur then r.val:SetText("|cffb0b0b0" .. L["worn"] .. "|r")
