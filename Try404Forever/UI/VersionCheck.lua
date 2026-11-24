@@ -1,16 +1,11 @@
 local _, FLT = ...
 local L = FLT.L or setmetatable({}, { __index = function(_, k) return k end }) -- (tests without Locales)
 
--- New version notice, shown only right after logging in.
--- About 20 s after login the addon asks the guild, the group and the hidden
--- recipe-sharing channel which version they run ("Q" + own version). Players
--- with a newer version answer once ("V" + their version). A newer version is
--- confirmed by one guild/group member or by two different channel players.
--- The yellow note is printed during the first minutes after login only; a
--- newer version seen later is remembered and shown at the next login.
-
+-- New version notices use Try404's own addon-message protocol. Peers in the
+-- guild or party report versions; WoW addons cannot query CurseForge directly.
+-- Check on login and when the guild or group roster changes. A verified newer
+-- version is shown as soon as it is learned, once per version in this session.
 local PREFIX = "TRY404VER"
-local LOGIN_WINDOW = 180 -- seconds after login in which the note may appear
 
 local function myVersion()
   local v
@@ -38,7 +33,6 @@ end
 
 local mine = parse(myVersion(), true) or {0}
 local reports, told = {}, {}
-local loginTime
 
 local function now() return GetTime and GetTime() or 0 end
 local function enabled()
@@ -54,15 +48,7 @@ local function announce(v)
 end
 
 local function confirmed(v)
-  if not enabled() then return end
-  if loginTime and now() - loginTime <= LOGIN_WINDOW then
-    announce(v)
-  elseif type(OneForAllDB) == "table" then
-    -- too late in the session: remember it for the next login
-    local old = parse(OneForAllDB.try404PendingNewVersion, false)
-    local t = parse(v, false)
-    if not old or newer(t, old) then OneForAllDB.try404PendingNewVersion = v end
-  end
+  if enabled() then announce(v) end
 end
 
 local function onVersion(v, sender, trusted)
@@ -87,12 +73,25 @@ local function channelID()
   if id and id > 0 then return id end
 end
 
+local lastAsk
 local function ask()
+  lastAsk = now()
   local q = "Q\t" .. myVersion()
   if IsInGuild and IsInGuild() then send(q, "GUILD") end
   if IsInRaid and IsInRaid() then send(q, "RAID") elseif IsInGroup and IsInGroup() then send(q, "PARTY") end
   local id = channelID()
   if id then send(q, "CHANNEL", id) end
+end
+
+-- Roster changes may come in bursts; send at most one check every 30 seconds.
+-- A delayed check still runs after the last burst, so a newly joined player is not missed.
+local checkScheduled = false
+local function scheduleCheck()
+  if checkScheduled then return end
+  local wait = lastAsk and math.max(2, 30 - (now() - lastAsk)) or 2
+  if not (C_Timer and C_Timer.After) then ask(); return end
+  checkScheduled = true
+  C_Timer.After(wait, function() checkScheduled = false; ask() end)
 end
 
 -- Answer someone with an older version once (random delay, skipped if another
@@ -117,10 +116,9 @@ local function answer(dist)
 end
 
 local ev = CreateFrame("Frame")
-for _, e in ipairs({"PLAYER_LOGIN", "CHAT_MSG_ADDON"}) do pcall(ev.RegisterEvent, ev, e) end
+for _, e in ipairs({"PLAYER_LOGIN", "CHAT_MSG_ADDON", "GROUP_ROSTER_UPDATE", "GUILD_ROSTER_UPDATE"}) do pcall(ev.RegisterEvent, ev, e) end
 ev:SetScript("OnEvent", function(_, event, prefix, msg, channel, sender)
   if event == "PLAYER_LOGIN" then
-    loginTime = now()
     if C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix then pcall(C_ChatInfo.RegisterAddonMessagePrefix, PREFIX) end
     if C_Timer and C_Timer.After then
       -- a newer version seen in an earlier session
@@ -132,8 +130,12 @@ ev:SetScript("OnEvent", function(_, event, prefix, msg, channel, sender)
         if t and newer(t, mine) and enabled() then announce(p) end
       end)
       -- after the recipe-sharing channel is joined (about 12 s after login)
-      C_Timer.After(20, ask)
+      C_Timer.After(20, function()
+        if not lastAsk or now() - lastAsk >= 30 then ask() end
+      end)
     end
+  elseif event == "GROUP_ROSTER_UPDATE" or event == "GUILD_ROSTER_UPDATE" then
+    scheduleCheck()
   elseif event == "CHAT_MSG_ADDON" and prefix == PREFIX and type(msg) == "string" then
     local kind, v = msg:match("^(%a)\t(.+)$")
     if not kind then return end

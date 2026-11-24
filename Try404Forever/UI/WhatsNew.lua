@@ -107,7 +107,7 @@ local function create()
       end
       local icf = f:CreateTexture(nil, "OVERLAY"); FLT.SetTex(icf, UI.ASSET_ROOT .. "talent_frame"); icf:SetPoint("TOPLEFT", ic, -3, 3); icf:SetPoint("BOTTOMRIGHT", ic, 3, -3); icf:SetVertexColor(FLT.SkinC(0.98, 0.76, 0.30, 1))
       local h = FLT.NewFS(f, nil, "OVERLAY", "GameFontNormalLarge"); h:SetPoint("TOPLEFT", 82, y - 2)
-      h:SetText(L[entry.title] .. (entry.note and ("  |cff9d9d9d" .. L[entry.note] .. "|r") or "")); h:SetTextColor(FLT.SkinC(1, 0.82, 0.20))
+      h:SetText(L[entry.title] .. (entry.note and ("  |cff9d9d9d" .. L[entry.note] .. "|r") or "")); h:SetTextColor(FLT.TextC(1, 0.82, 0.20))
       -- the button only for characters that have that tab (Hunter Pets: hunters)
       if entry.tab and (not entry.buttonClass or entry.buttonClass == class) then
         local b = UI.GoldButton(f, L[entry.button], 180, 30, nil, 14); b:SetPoint("TOPRIGHT", -22, y)
@@ -131,7 +131,7 @@ local function create()
         local dot = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlight"); dot:SetPoint("TOPLEFT", 84, ly); dot:SetText(FLT.SkinHex("d9a63a") .. "•|r")
         local t = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlight"); t:SetPoint("TOPLEFT", 98, ly)
         -- the lines stay left of the buttons column (user 22.10.); full width only for entries without a button
-        t:SetWidth(entry.tab and 360 or 550); t:SetJustifyH("LEFT"); t:SetText(L[line]); t:SetTextColor(FLT.SkinC(0.90, 0.88, 0.82))
+        t:SetWidth(entry.tab and 360 or 550); t:SetJustifyH("LEFT"); t:SetText(L[line]); t:SetTextColor(FLT.TextC(0.90, 0.88, 0.82))
         ly = ly - math.max(18, (t:GetStringHeight() or 14) + 6)
       end
       if entry.images then

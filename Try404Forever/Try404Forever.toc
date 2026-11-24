@@ -7,7 +7,7 @@
 ## Notes-zhTW: 魔獸世界：永恆的地城、裝備與專業技能手冊。
 ## Author: Smoergi (OneForAll), Try404 Forever contributors
 ## X-License: GPL-3.0-or-later
-## Version: 6.2.13.3
+## Version: 6.2.16.1
 ## IconTexture: Interface\AddOns\Try404Forever\Assets\try404_icon
 ## OptionalDeps: Baganator
 ## SavedVariables: OneForAllDB, ForeverCompanionDB, ForeverLibraryTrackerDB
@@ -75,6 +75,9 @@ Data\Dungeons\BarrowDeeps.lua
 Data\Dungeons\HyjalSummit.lua
 Data\Dungeons\OnyxiasLair.lua
 Data\DungeonQuestChains.lua
+Data\QuestMissable.lua
+Data\DungeonEncounters.lua
+Data\DungeonWings.lua
 Data\DungeonKeys.lua
 Data\RaidAttunements.lua
 Data\DungeonDropChance.lua
@@ -91,6 +94,7 @@ Data\ProfessionFees.lua
 Data\ProfessionTools.lua
 Data\Armory.lua
 Data\DungeonMaps.lua
+Data\DungeonNavigation.lua
 Data\DungeonMapExtras.lua
 Data\AlcazMap.lua
 Data\MoreForeverMaps.lua
@@ -108,6 +112,7 @@ Data\QuestDrops.lua
 Data\GearWeights.lua
 Data\ItemSets.lua
 Data\BoeItems.lua
+Data\Smelting.lua
 Data\BisLists.lua
 Data\Disenchant.lua
 Data\Enchants.lua
@@ -153,6 +158,8 @@ UI\GearMarks.lua
 UI\Level60.lua
 UI\Armory.lua
 UI\QuestShare.lua
+UI\RunTracker.lua
+UI\RunHistory.lua
 TalentData.lua
 TalentSpellIDs.lua
 TalentLayoutFallback.lua

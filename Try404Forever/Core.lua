@@ -300,6 +300,8 @@ f:SetScript("OnEvent", function(_, event, arg1)
     FLT.bankItems = char.bankItems
     -- 6.0.1: the character's profile (UI/Profiles.lua) into the live settings, before the first-start defaults
     if FLT.Profiles then FLT.Profiles.Load() end
+    -- Dungeon navigation is on by default; retain an explicit user choice.
+    if OneForAllDB.dungeonMapKey == nil then OneForAllDB.dungeonMapKey = true end
     -- Try404 Forever: start with convenience features off; users can enable them later.
     if OneForAllDB.qol == nil then OneForAllDB.qol = {} end
     if OneForAllDB.nearbyAlertsEnabled == nil then OneForAllDB.nearbyAlertsEnabled = false end
@@ -336,6 +338,10 @@ SlashCmdList.ONEFORALL = function(cmd)
     FLT:Refresh()
   elseif cmd == "craft" then
     if FLT.CraftList then FLT.CraftList.Toggle() end
+  elseif cmd == "tracker" then
+    if FLT.RunTracker then FLT.RunTracker.Toggle() end
+  elseif cmd == "tracker test" then
+    if FLT.RunTracker then FLT.RunTracker.Test() end
   elseif cmd == "where" then
     -- Prints the current map and coordinates, to correct map pins in the data.
     local mapID = C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player")

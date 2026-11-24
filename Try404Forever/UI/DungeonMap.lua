@@ -55,12 +55,28 @@ function UI.CreateDungeonMap(parent)
   local mask
   local map, data, dungeon, onBoss
   local floorRoot, floorIndex
+  local nav, routeShown, segments, routeIndex = nil, true, {}, 1
+  -- Put the location above the map's child frames, not on the parent behind the tiles.
+  local roomPin = pinLayer:CreateTexture(nil, "OVERLAY")
+  roomPin:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcon_1")
+  roomPin:SetSize(26, 26); roomPin:Hide()
+  local roomText = FLT.NewFS(pinLayer, nil, "OVERLAY", "GameFontNormalSmall")
+  roomText:SetPoint("TOPLEFT", vp, "TOPLEFT", 10, -25)
+  local roomPoint
+  local routeButton
+  local function label(cn, tw, en)
+    local lang = FLT.Language and FLT.Language()
+    return lang == "zhCN" and cn or lang == "zhTW" and tw or en
+  end
   local floorButton = UI.GoldButton(f, "", 86, 20, nil, 11)
   floorButton:SetFrameLevel((pinLayer:GetFrameLevel() or 1) + 10) -- keep the control above the map and boss pins
   floorButton:SetPoint("TOPRIGHT", vp, "TOPRIGHT", -8, -8); floorButton:Hide()
   floorButton:SetScript("OnClick", function()
     if floorRoot then floorIndex = floorIndex % #floorRoot.floors + 1; f:SetMap(floorRoot, dungeon, onBoss, floorIndex) end
   end)
+  routeButton = UI.GoldButton(f, "", 90, 20, nil, 11)
+  routeButton:SetPoint("TOPRIGHT", vp, "TOPRIGHT", -8, -32)
+  routeButton:SetFrameLevel((pinLayer:GetFrameLevel() or 1) + 10)
   local zoom, ox, oy = 1, 0, 0
   local TILE = 1600 / 3 -- size of an outdoor minimap square in yards
 
@@ -93,7 +109,92 @@ function UI.CreateDungeonMap(parent)
         p:ClearAllPoints(); p:SetPoint("CENTER", vp, "TOPLEFT", w / 2 + sx, -h / 2 + sy)
       end
     end
+    for _, line in ipairs(segments) do
+      if routeShown and line.enabled then
+        local ax, ay = toScreen(line.u1, line.v1, k)
+        local bx, by = toScreen(line.u2, line.v2, k)
+        line:ClearAllPoints()
+        line:SetStartPoint("TOPLEFT", vp, w / 2 + ax, -h / 2 + ay)
+        line:SetEndPoint("TOPLEFT", vp, w / 2 + bx, -h / 2 + by)
+        line:Show()
+        if line.arrowA and line.hasArrow then
+          local dx, dy = bx - ax, by - ay
+          local length = math.sqrt(dx * dx + dy * dy)
+          if length >= 8 then
+            dx, dy = dx / length, dy / length
+            local mx, my = (ax + bx) / 2, (ay + by) / 2
+            for i, wing in ipairs({line.arrowA, line.arrowB}) do
+              local side = i == 1 and 1 or -1
+              wing:SetStartPoint("TOPLEFT", vp, w / 2 + mx, -h / 2 + my)
+              wing:SetEndPoint("TOPLEFT", vp, w / 2 + mx - dx * 7 - dy * 4 * side, -h / 2 + my - dy * 7 + dx * 4 * side)
+              wing:Show()
+            end
+          else line.arrowA:Hide(); line.arrowB:Hide() end
+        end
+      else
+        line:Hide()
+        if line.arrowA then line.arrowA:Hide(); line.arrowB:Hide() end
+      end
+    end
+    if roomPoint then
+      local sx, sy = toScreen(roomPoint[1], roomPoint[2], k)
+      roomPin:ClearAllPoints(); roomPin:SetPoint("CENTER", vp, "TOPLEFT", w / 2 + sx, -h / 2 + sy)
+      roomPin:Show()
+    else roomPin:Hide() end
   end
+
+  local function updateRoom()
+    roomPoint = nil
+    local roomName, unknownName
+    if nav and dungeon and IsInInstance and GetInstanceInfo then
+      local inside, kind = IsInInstance()
+      local _, _, _, _, _, _, _, id = GetInstanceInfo()
+      if not (issecretvalue and (issecretvalue(inside) or issecretvalue(kind) or issecretvalue(id)))
+          and inside and (kind == "party" or kind == "raid") and id == nav.instanceID then
+        local sub = GetSubZoneText and GetSubZoneText()
+        local mini = GetMinimapZoneText and GetMinimapZoneText()
+        if issecretvalue and issecretvalue(sub) then sub = nil end
+        if issecretvalue and issecretvalue(mini) then mini = nil end
+        unknownName = (type(sub) == "string" and sub ~= "" and sub) or (type(mini) == "string" and mini ~= "" and mini) or nil
+        for _, room in ipairs(nav.rooms or {}) do
+          if (sub and sub ~= "" and (room[1] == sub or room[2] == sub or room[3] == sub))
+              or (mini and mini ~= "" and (room[1] == mini or room[2] == mini or room[3] == mini)) then
+            local lang = FLT.Language and FLT.Language()
+            roomName = lang == "zhCN" and room[2] or lang == "zhTW" and room[3] or room[1]
+            local best
+            for _, box in ipairs(room[4]) do
+              if (box[1] == 0 or box[1] == floorIndex) and (not best or box[4] > best[4]) then best = box end
+            end
+            if best then roomPoint = { best[2], best[3] } end
+            break
+          end
+        end
+      end
+    end
+    roomText:SetText(roomName and (label("所在区域（大致）：", "所在區域（大致）：", "Approximate area: ") .. roomName)
+      or unknownName and (label("区域暂无法定位：", "區域暫無法定位：", "Area not located: ") .. unknownName) or "")
+    layout()
+  end
+  routeButton:SetScript("OnClick", function()
+    if nav and #nav.routes > 1 then
+      if not routeShown then routeShown, routeIndex = true, 1
+      elseif routeIndex < #nav.routes then routeIndex = routeIndex + 1
+      else routeShown = false end
+    else routeShown = not routeShown end
+    local savedZoom, savedX, savedY = zoom, ox, oy
+    if floorRoot then f:SetMap(floorRoot, dungeon, onBoss, floorIndex) else f:SetMap(map, dungeon, onBoss) end
+    zoom, ox, oy = savedZoom, savedX, savedY
+    layout()
+  end)
+  routeButton:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+    GameTooltip:AddLine(label("点击切换路线或隐藏路线。金色为主路线，蓝色为支线。", "點擊切換路線或隱藏路線。金色為主路線，藍色為支線。", "Click to switch or hide the route. Gold: main route; blue: side route."), 1, 1, 1, true)
+    GameTooltip:Show()
+  end)
+  routeButton:SetScript("OnLeave", function() GameTooltip:Hide() end)
+  for _, event in ipairs({"PLAYER_ENTERING_WORLD", "ZONE_CHANGED_NEW_AREA", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED"}) do f:RegisterEvent(event) end
+  f:SetScript("OnEvent", function() if f:IsShown() then updateRoom() end end)
+  f:SetScript("OnShow", updateRoom)
 
   local nTex = 0
   local function nextTexture(image, layer, sub)
@@ -124,12 +225,16 @@ function UI.CreateDungeonMap(parent)
     -- boss portrait in the gold boss ring (same as Bosses & Loot), shown instead of the disc
     p.boss = UI.CreateBossFrame and UI.CreateBossFrame(p, 34, false, true)
     if p.boss then p.boss:SetPoint("CENTER"); p.boss:Hide() end
+    -- a boss killed in your current run (dungeon tracker, 6.2.14): red X like on the tracker (user 23.11.)
+    p.dead = p:CreateTexture(nil, "OVERLAY", nil, 3); p.dead:SetSize(24, 24); p.dead:SetPoint("CENTER")
+    p.dead:SetTexture("Interface\\RaidFrame\\ReadyCheck-NotReady"); p.dead:Hide()
     p.label = FLT.NewFS(p, nil, "OVERLAY", "GameFontHighlightSmall"); p.label:SetPoint("TOP", p, "BOTTOM", 0, -3)
     p.label:SetShadowColor(0, 0, 0, 1); p.label:SetShadowOffset(1, -1)
     local hl = p:CreateTexture(nil, "HIGHLIGHT"); hl:SetAllPoints(); hl:SetBlendMode("ADD")
     FLT.SetTex(hl, UI.ASSET_ROOT .. "ring_plain"); hl:SetVertexColor(FLT.SkinC(1, 0.85, 0.45, 0.8)) -- matches the plain boss ring
     p:SetScript("OnEnter", function(self)
       GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:AddLine(self.title, 1, 0.82, 0)
+      if self.killed then GameTooltip:AddLine(string.format(L["Killed after %s"], FLT.RunTracker.Clock(self.killed)), 0.45, 1, 0.5) end
       if self.tip then GameTooltip:AddLine(self.tip, 1, 1, 1, true) end
       GameTooltip:Show()
     end)
@@ -152,6 +257,53 @@ function UI.CreateDungeonMap(parent)
       hint:SetText(L["Mouse wheel: zoom  ·  drag: move  ·  click a boss to see its loot  ·  map layout: Forever Simple World Map by Tarolg"])
     end
     map, dungeon, onBoss = m, d, bossCallback
+    local previousNav = nav
+    nav = d and FLT.DUNGEON_NAV and FLT.DUNGEON_NAV[d.name]
+    if nav ~= previousNav then routeIndex, routeShown = 1, true end
+    for _, line in ipairs(segments) do
+      line.enabled = false; line:Hide()
+      if line.arrowA then line.arrowA:Hide(); line.arrowB:Hide() end
+    end
+    local count = 0
+    if nav and canvas.CreateLine then
+      for _, path in ipairs((nav.routes[routeIndex] and nav.routes[routeIndex].paths) or {}) do
+        if path[1] == 0 or path[1] == floorIndex then
+          for j = 3, #path - 3, 2 do
+            count = count + 1
+            local line = segments[count]
+            if not line then line = canvas:CreateLine(nil, "OVERLAY"); segments[count] = line end
+            line.enabled, line.u1, line.v1, line.u2, line.v2 = true, path[j], path[j+1], path[j+2], path[j+3]
+            line:SetThickness(path[2] == 1 and 3 or 2)
+            if path[2] == 1 then line:SetColorTexture(1, 0.72, 0.12, 0.9) else line:SetColorTexture(0.5, 0.75, 1, 0.8) end
+            if path[2] == 1 and (j - 3) % 12 == 0 then
+              line.hasArrow = true
+              if not line.arrowA then
+                line.arrowA = canvas:CreateLine(nil, "OVERLAY"); line.arrowB = canvas:CreateLine(nil, "OVERLAY")
+                for _, wing in ipairs({line.arrowA, line.arrowB}) do wing:SetThickness(2); wing:SetColorTexture(1, 0.9, 0.55, 1) end
+              end
+            elseif line.arrowA then
+              line.arrowA:Hide(); line.arrowB:Hide(); line.hasArrow = false
+            end
+          end
+        end
+      end
+    end
+    local hasRoute = count > 0
+    if nav and not hasRoute then
+      for _, candidate in ipairs(nav.routes) do
+        for _, path in ipairs(candidate.paths or {}) do
+          if path[1] == 0 or path[1] == floorIndex then hasRoute = true; break end
+        end
+        if hasRoute then break end
+      end
+    end
+    routeButton:SetShown(hasRoute and canvas.CreateLine ~= nil)
+    if nav and #nav.routes > 1 then
+      local r = nav.routes[routeIndex]
+      routeButton:SetLabel(routeShown and label(r[2], r[3], r[1]) or label("路线：关闭", "路線：關閉", "Route: off"))
+    else
+      routeButton:SetLabel(routeShown and label("隐藏路线", "隱藏路線", "Hide route") or label("显示路线", "顯示路線", "Show route"))
+    end
     data = FLT.DUNGEON_MAP_DATA and FLT.DUNGEON_MAP_DATA[m.map] or {}
     zoom, ox, oy = 1, 0, 0
     for _, x in ipairs(tex) do x:Hide() end
@@ -207,6 +359,7 @@ function UI.CreateDungeonMap(parent)
       p.tip = L["Click: show its loot in Bosses & Loot."]
       p.icon:Hide(); p.label:SetText(p.title)
       local boss = d and d.bosses and d.bosses[idx]
+      p.bossRec = boss
       if p.boss and boss and UI.setBossPortrait then
         UI.setBossPortrait(p.boss.portrait, d, boss)
         p.boss:Show(); p.disc:Hide(); p.ring:Hide(); p.num:Hide(); p:SetSize(34, 34)
@@ -219,7 +372,7 @@ function UI.CreateDungeonMap(parent)
     if m.entrance then
       n = n + 1
       local p = pin(n); p:Show()
-      p.u, p.v, p.title, p.tip = m.entrance[1], m.entrance[2], L["Entrance"], nil
+      p.u, p.v, p.title, p.tip, p.bossRec = m.entrance[1], m.entrance[2], L["Entrance"], nil, nil
       -- the dungeon / raid swirl of the world map (same as Map Landmarks, user 16.10.)
       p.num:Hide(); p.label:SetText(""); p.icon:Show(); p.icon:ClearAllPoints(); p.icon:SetAllPoints(p)
       if not (p.icon.SetAtlas and pcall(p.icon.SetAtlas, p.icon, (d and d.raid) and "raid" or "dungeon")) then
@@ -235,7 +388,7 @@ function UI.CreateDungeonMap(parent)
     for _, e in ipairs(mk or {}) do
       n = n + 1
       local p = pin(n); p:Show()
-      p.u, p.v = e[2], e[3]
+      p.u, p.v, p.bossRec = e[2], e[3], nil
       p.title = mk.title and string.format(L[mk.title], e[1]) or e[1]
       p.tip = mk.tip and L[mk.tip] or nil
       p.icon:Hide(); p.label:SetText(""); if p.boss then p.boss:Hide() end
@@ -248,9 +401,28 @@ function UI.CreateDungeonMap(parent)
     else
       note:SetText(#(m.bosses or {}) == 0 and L["Boss positions are not known yet for this dungeon."] or "")
     end
+    updateRoom()
+    f.MarkKills()
     layout()
   end
-  f.Refresh = layout
+  -- the bosses dead in your current run of this dungeon (its open run in the dungeon tracker; gone after a reset)
+  function f.MarkKills()
+    local RT = FLT.RunTracker
+    local c = RT and RT.Current and RT.Current()
+    if c and not (dungeon and c.key == dungeon.key) then c = nil end
+    for _, p in ipairs(pins) do
+      local k = c and p.bossRec and RT.Killed(c, p.bossRec) or nil
+      p.killed = k
+      p.dead:SetShown(k and p:IsShown() and true or false)
+      if p.boss then p.boss.portrait:SetDesaturated(k and true or false) end
+    end
+  end
+  f.Refresh = function() f.MarkKills(); layout() end
+  if FLT.RunTracker then
+    local RT = FLT.RunTracker
+    RT.mapViews = RT.mapViews or setmetatable({}, { __mode = "k" })
+    RT.mapViews[f] = true
+  end
 
   vp:SetScript("OnSizeChanged", layout)
   vp:SetScript("OnMouseWheel", function(self, delta)
