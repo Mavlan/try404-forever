@@ -18,26 +18,19 @@ local NEWS_AUTO = true -- set true (and a new NEWS_ID) for the next release with
 -- 6.2.12 (user 19.11.): Guild Games with special thanks to Gaelda, Ritter Roulade and Deaders, and "Smaller changes"
 -- (Skill-Up changes, low level quests, walking routes) - shown automatically once.
 -- 6.2.13 (user 21.11.): BiS List, Cheap Upgrades with the Cheap Upgrade Scan, the new stat weights - shown automatically once.
-local NEWS_ID = "6.2.13.2"
+local NEWS_ID = "6.2.16.1"
 
 -- images (optional): pictures in a row under the lines, each { tex, shown width, shown height, texcoord right,
 -- texcoord bottom } (made by tools/art/proc_news.py from the user's screenshots in source_images/news)
 -- qol = the Quality of Life group the button opens; shot = a screenshot behind a "Show me" button (user 09.11.):
 -- { texture, shown width, shown height, texcoord right, texcoord bottom } (tools/art/proc_news.py)
 local NEWS = {
-  { icon = "Interface\\Icons\\INV_Misc_Map_01", title = N"New dungeon maps", tab = "dungeons", button = N"Open Dungeons",
+  { icon = "Interface\\Icons\\INV_Misc_Map_01", title = N"Dungeon tracker", tab = "qol", qol = "iface", button = N"Open Quality of Life",
     lines = {
-      N"Dungeon maps are now available for Alcaz Prison, The Drowned City, Krol'dok Stronghold, Blackmaw Hold and Shaper's Terrace.",
-      N"Switch floors on multi-level maps and click a boss to see its loot. Boss locations are approximate.",
+      N"The dungeon tracker is enabled by default. It shows boss progress, time, experience, gold and quests during a run.",
+      N"Open Quality of Life > Interface to adjust or turn it off. Dungeon & Raids > History keeps your past runs.",
     } },
 }
-if GetLocale and GetLocale() == "zhCN" then
-  NEWS[#NEWS + 1] = { icon = "Interface\\Icons\\INV_Misc_Campfire", title = "帐篷主人自动密语", tab = "qol", qol = "social", button = N"Open Quality of Life",
-    lines = {
-      "仅限中国服简体中文客户端：选中其他玩家的帐篷时，显示主人并尝试自动发送蹭帐篷请求。",
-      "入口：便利功能 → 社交 → 帐篷。功能默认关闭，开启后使用。",
-    } }
-end
 
 local frame
 
