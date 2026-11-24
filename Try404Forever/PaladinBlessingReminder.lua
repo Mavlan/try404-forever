@@ -65,10 +65,11 @@ local function readOwnBlessing()
   local names = {}
   for _, id in ipairs(blessingIDs) do local n = spellName(id); if n then names[n] = true end end
   if not next(names) then return false end
+  local otherBlessing = false
   for i = 1, 40 do
     local ok, aura = pcall(get, "player", i, "HELPFUL")
     if not ok then return false end
-    if not aura then return nil end
+    if not aura then return otherBlessing and {other=true} or nil end
     local name, source = aura.name, aura.sourceUnit
     if FLT.IsSecret(name, source) then return false end
     if type(name) == "string" and names[name] then
@@ -85,10 +86,11 @@ local function readOwnBlessing()
           if FLT.IsSecret(id, expiry) or type(id) ~= "number" or type(expiry) ~= "number" then return false end
           return {id=id, name=name, expiry=expiry}
         end
+        otherBlessing = true
       end
     end
   end
-  return nil
+  return otherBlessing and {other=true} or nil
 end
 local check
 check = function()
@@ -96,9 +98,10 @@ check = function()
   if not enabled() then hideCard(); return end
   if UnitIsDeadOrGhost and UnitIsDeadOrGhost("player") then hideCard(); return end
   local aura = readOwnBlessing()
-  if aura == false then return end -- combat-restricted aura data: retain the previous state
+  if aura == false then hideCard(); return end -- aura state is unknown: do not keep a stale missing-buff warning
   local d = OneForAllCharDB
   if type(d) ~= "table" then return end
+  if aura and aura.other then hideCard(); return end -- another paladin's blessing is already active
   if aura then
     d.try404LastBlessing = {id=aura.id, name=aura.name}
     local left = aura.expiry > 0 and (aura.expiry - GetTime()) or nil

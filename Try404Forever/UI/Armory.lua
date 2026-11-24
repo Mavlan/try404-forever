@@ -688,11 +688,9 @@ local function createArmoryPanel(parent)
   otherB:SetScript("OnClick", function(self)
     local opts, longest = {}, 0
     for _, sub in ipairs(otherSubs(current)) do
-      local subs = { [sub] = true }
-      local dim = notYet(current, subs)
       local label = sectionText(sub)
-      opts[#opts + 1] = { key = sub, label = dim and ("|cff9d9d9d" .. label .. "  " .. L["(not in Forever yet)"] .. "|r") or label }
-      longest = math.max(longest, #label + (dim and 20 or 0))
+      opts[#opts + 1] = { key = sub, label = label }
+      longest = math.max(longest, #label)
     end
     -- wide enough for the longest name (the list was narrower than its text, user 22.10.)
     UI.OpenDropDown(self, opts, tabPick[current], function(k) tabPick[current] = k; paintTabs(); if refreshSets then refreshSets() end end,
