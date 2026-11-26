@@ -27,7 +27,17 @@ local META = {
   ["Scarlet Monastery: Armory"] = {key="smarm", instanceID=189, short="SM: Armory", uiMaps={304}, territory="Horde", mapZone="Tirisfal Glades", mapX=82.6, mapY=33.8, minLevel=36, coordsUnverified=true},
   ["Razorfen Downs"] = {key="rfd", instanceID=129, territory="Horde", mapZone="The Barrens", mapX=49.0, mapY=93.9, minLevel=37, coordsUnverified=true},
   ["Scarlet Monastery: Cathedral"] = {key="smcath", instanceID=189, short="SM: Cathedral", uiMaps={305}, territory="Horde", mapZone="Tirisfal Glades", mapX=82.6, mapY=33.8, minLevel=38, coordsUnverified=true},
-  ["Krol'dok Stronghold"] = {key="kroldok", instanceID=3039, territory="Contested", mapZone="Riverglades", mapX=37.5, mapY=37.5, coordsUnverified=true, betaNew=true, minLevel=40},
+  -- entrances (all unverified in game): Krol'dok 37.5, 39.0 (6.2.13, Discord tovox 20.11. with a screenshot at the real entrance;
+  -- before foreverchanges.pro "a fortress on a hill at about 48.6, 26.3"); 6.2.7-beta16
+  -- (user's list 13.11., checked against warcrafttavern.com): Alcaz the portal in the basement of the northern prison building
+  -- (mmonster 75.5, 13.7; Warcraft Tavern "around 75, 15"), Drowned City underwater off Stranglethorn past the Vile Reef
+  -- (Sunken Hollow, about 21.4, 27.9), Blackmaw Hold the furbolg tunnel with the meeting stone in Azshara (38.4, 32.6; Warcraft
+  -- Tavern 38.7, 33.4 - the portal itself is deep inside, Winterspring 66.6, 84.4), Shaper's Terrace the titan gate on the
+  -- hill above Marshal's Refuge (48.1, 6.1)
+  -- instanceID (6.2.17-beta9, a friend of the user 24.11.: the tracker did not notice Alcaz Prison): the five new dungeons had no ID,
+  -- so only the English name matched (GetInstanceInfo gives the client's language); IDs = the Forever client's Map table (1.60.1.71091),
+  -- also Hall of Thanes, Ruins of Lordaeron, Excavation Site and Dalaran; Barrow Deeps / Hyjal Summit are not in the client yet
+  ["Krol'dok Stronghold"] = {key="kroldok", instanceID=3039, territory="Contested", mapZone="Riverglades", mapX=37.5, mapY=39.0, betaNew=true, minLevel=40},
   ["Uldaman"] = {key="uldaman", instanceID=70, territory="Contested", mapZone="Badlands", mapX=44.6, mapY=12.1, minLevel=41, coordsUnverified=true},
   ["Zul'Farrak"] = {key="zf", instanceID=209, territory="Contested", mapZone="Tanaris", mapX=38.7, mapY=20.1, minLevel=44, coordsUnverified=true},
   ["Maraudon"] = {key="maraudon", instanceID=349, territory="Contested", mapZone="Desolace", mapX=29.1, mapY=62.5, minLevel=46, coordsUnverified=true},
@@ -115,6 +125,9 @@ local function convertBoss(b)
     -- counts as rare everywhere; only its label says "Optional"
     rare=b.rare or b.optional,
     optional=b.optional,
+    -- 6.2.17 (Discord djmarscomet 24.11.: the Lost Dwarves are friendly to the Alliance; Dungeon Journal does the same): only this
+    -- faction can fight the boss - the other one does not see it in the tracker and does not need it for a finished run
+    factionOnly=b.factionOnly,
     description=b.description,
     icon=b.icon,
     customIcon=b.customIcon,
@@ -545,3 +558,10 @@ FLT.BOSS_LEVELS = {
   [255699] = "19", -- Lordaeron Captain
   [246931] = "27-28", -- Mana Wraith
 }
+
+-- a boss this character can fight (6.2.17: factionOnly bosses - the Lost Dwarves, the Lordaeron Captain - only for that faction)
+function FLT.BossForMe(b)
+  if not (b and b.factionOnly) then return true end
+  local f = UnitFactionGroup and UnitFactionGroup("player")
+  return not f or f == b.factionOnly
+end

@@ -18,7 +18,7 @@ local NEWS_AUTO = true -- set true (and a new NEWS_ID) for the next release with
 -- 6.2.12 (user 19.11.): Guild Games with special thanks to Gaelda, Ritter Roulade and Deaders, and "Smaller changes"
 -- (Skill-Up changes, low level quests, walking routes) - shown automatically once.
 -- 6.2.13 (user 21.11.): BiS List, Cheap Upgrades with the Cheap Upgrade Scan, the new stat weights - shown automatically once.
-local NEWS_ID = "6.2.16.1"
+local NEWS_ID = "6.2.17.1"
 
 -- images (optional): pictures in a row under the lines, each { tex, shown width, shown height, texcoord right,
 -- texcoord bottom } (made by tools/art/proc_news.py from the user's screenshots in source_images/news)
@@ -27,8 +27,9 @@ local NEWS_ID = "6.2.16.1"
 local NEWS = {
   { icon = "Interface\\Icons\\INV_Misc_Map_01", title = N"Dungeon tracker", tab = "qol", qol = "iface", button = N"Open Quality of Life",
     lines = {
-      N"The dungeon tracker is enabled by default. It shows boss progress, time, experience, gold and quests during a run.",
-      N"Open Quality of Life > Interface to adjust or turn it off. Dungeon & Raids > History keeps your past runs.",
+      N"The dungeon tracker now shows boss progress, loot rolls and loot value, with targeting and raid marks.",
+      N"Dungeon quest pages now show clearer rewards and quest chains.",
+      N"Cheap Upgrade Scan is enabled by default and can be adjusted in Quality of Life.",
     } },
 }
 
