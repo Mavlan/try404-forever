@@ -176,6 +176,20 @@ FLT.DUNGEON_REGISTRY["Ruins of Lordaeron"] = {
             },
             rewardSummary = "4,600 XP · +150 Undercity",
         },
+        {
+            level = 22,
+            id = 95161,
+            name = "Remember That I Love You",
+            requires = 15,
+            faction = "Alliance",
+            pickup = "Orphan Matron Nightingale, Stormwind City (56.3, 54.0)",
+            objective = "Deliver the Blood-Stained Letter to Avette Fellwood in Duskwood.",
+            note = "Follow-up of the first quest of the same name.",
+            turnin = "Avette Fellwood, Duskwood (73.0, 44.4)",
+            rewardItems = {
+                {279870, "Tarnished Locket", 2},
+            },
+        },
     },
     bosses = {
         {

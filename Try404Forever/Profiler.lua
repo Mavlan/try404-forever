@@ -9,7 +9,10 @@ if not on then return end
 
 local fns, n = {}, 0 -- function -> "UI/File.lua:123"
 local function where()
-  local st = debugstack(3, 8, 0) or ""
+  -- 6.2.18 (Discord clyd3032 / henoo / gold.k 26.11.): the SetScript hook also runs for the game's own frames (unit frames in
+  -- combat); there the stack text is a "secret" string and reading it was an error - such calls are not ours, skip them
+  local st = debugstack(3, 8, 0)
+  if type(st) ~= "string" or (issecretvalue and issecretvalue(st)) then return end
   for path, line in st:gmatch("OneForAll[/\\]([%w_/\\%-]+%.lua)[^:\n]*:(%d+)") do
     if not path:find("Profiler.lua", 1, true) then return path:gsub("\\", "/") .. ":" .. line end
   end

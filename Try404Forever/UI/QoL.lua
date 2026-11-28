@@ -15,11 +15,7 @@ local openDropDown -- below
 -- Yellow "!" (tooltip "New") next to options added since the last live release.
 -- Kept for all versions of a minor line (5.7.0 ... 5.7.x); emptied when the next minor line
 -- (5.8.0) starts (TODO.md "Neu-Markierungen").
-local NEW_TAGS = { -- user 20.11.2026 23:02: all marks from before 6.2.13 removed, only this version's stay
-  gossipSkip = "6.2.13",
-  gvMode = "6.2.13",
-  ahScan = "6.2.13",
-  runTracker = "6.2.14",
+local NEW_TAGS = { -- option key = version; since 6.3.0 (user 27.11.2026) a mark lives for one version (and its hotfixes) only
 }
 -- placed left of the checkbox (or of the label when there is none), user 16.10.
 local function newTag(parent, anchor, key, dx)

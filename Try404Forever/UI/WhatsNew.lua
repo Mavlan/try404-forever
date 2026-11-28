@@ -18,18 +18,28 @@ local NEWS_AUTO = true -- set true (and a new NEWS_ID) for the next release with
 -- 6.2.12 (user 19.11.): Guild Games with special thanks to Gaelda, Ritter Roulade and Deaders, and "Smaller changes"
 -- (Skill-Up changes, low level quests, walking routes) - shown automatically once.
 -- 6.2.13 (user 21.11.): BiS List, Cheap Upgrades with the Cheap Upgrade Scan, the new stat weights - shown automatically once.
-local NEWS_ID = "6.2.17.1"
+local NEWS_ID = "6.3.0.1"
 
 -- images (optional): pictures in a row under the lines, each { tex, shown width, shown height, texcoord right,
 -- texcoord bottom } (made by tools/art/proc_news.py from the user's screenshots in source_images/news)
 -- qol = the Quality of Life group the button opens; shot = a screenshot behind a "Show me" button (user 09.11.):
 -- { texture, shown width, shown height, texcoord right, texcoord bottom } (tools/art/proc_news.py)
 local NEWS = {
-  { icon = "Interface\\Icons\\INV_Misc_Map_01", title = N"Dungeon tracker", tab = "qol", qol = "iface", button = N"Open Quality of Life",
+  { icon = "Interface\\Icons\\Trade_Herbalism", title = N"Profession guides and trainers", tab = "professions", button = N"Open Professions",
     lines = {
-      N"The dungeon tracker now shows boss progress, loot rolls and loot value, with targeting and raid marks.",
-      N"Dungeon quest pages now show clearer rewards and quest chains.",
-      N"Cheap Upgrade Scan is enabled by default and can be adjusted in Quality of Life.",
+      N"New gathering, fishing and lockpicking guides show skill ranges and locations; mining includes smelting, fishing includes cooking.",
+      N"Each profession has a trainer guide with ranks, requirements, costs and faction trainers.",
+      N"The Favor Calculator compares crate and material prices and creates a shopping list.",
+    } },
+  { icon = "Interface\\Icons\\INV_Misc_Map_01", title = N"Dungeon tracking and quests", tab = "dungeons", button = N"Open Dungeons",
+    lines = {
+      N"The dungeon tracker shows wishlist stars; right-click loot to add or remove items.",
+      N"Added quests and rewards for Blackrock Depths, Alcaz Prison and Ruins of Lordaeron.",
+    } },
+  { icon = "Interface\\Icons\\Ability_Mount_Gryphon_01", title = N"Flight and more", tab = "qol", qol = "iface", button = N"Open Quality of Life",
+    lines = {
+      N"The flight timer shows destination, time and next stop, with a request-stop button.",
+      N"Updated battleground reputation rewards, hunter pets, quests and best-in-slot lists; fixed interface and Lua errors.",
     } },
 }
 

@@ -355,6 +355,22 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             },
             rewardSummary = "8,400 XP · 85s",
         },
+        {
+            level = 54,
+            id = 4242,
+            name = "Abandoned Hope",
+            requires = 48,
+            faction = "Alliance",
+            pickup = "Marshal Windsor, inside Blackrock Depths",
+            objective = "Give Marshal Maxwell the bad news.",
+            turnin = "Marshal Maxwell, Burning Steppes",
+            rewardChoice = true,
+            rewardItems = {
+                {12018, "Conservator Helm", 3},
+                {12021, "Shieldplate Sabatons", 3},
+                {12041, "Windshear Leggings", 3},
+            },
+        },
     },
     bosses = {
         {
@@ -494,6 +510,7 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             loot = {
                 {11755, "Verek's Collar", "Neck", 3}, -- Dungeon Journal (user 25.11.2026)
                 {22242, "Verek's Leash", "Waist, Mail", 3}, -- Dungeon Journal (user 25.11.2026)
+                {276884, "Verek's Loyal Wraps", "Wrist, Cloth", 3}, -- wowtbc.gg (user 27.11.2026)
                 {11782, "Boreal Mantle", "Shoulder, Cloth", 3},
                 {11783, "Chillsteel Girdle", "Waist, Mail", 3},
                 {11784, "Arbiter's Blade", "Main Hand, Sword", 3},

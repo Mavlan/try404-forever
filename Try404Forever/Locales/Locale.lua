@@ -18,9 +18,12 @@ local function brandText(s)
   branded[s] = out
   return out
 end
+local DOT_FIX = type(GetLocale) == "function" and GetLocale() == "ruRU"
+FLT.DOT = DOT_FIX and "∙" or "·"
 FLT.L = setmetatable({}, { __index = function(_, k)
-  local v = (active and active[k]) or (supplemental and supplemental[k])
-  return brandText(v or k)
+  local v = (active and active[k]) or (supplemental and supplemental[k]) or k
+  if DOT_FIX and type(v) == "string" and v:find("·", 1, true) then v = v:gsub("·", "∙") end
+  return brandText(v)
 end })
 FLT.LOCALES = FLT.LOCALES or {} -- [code] = function returning the table, put there by the language files
 

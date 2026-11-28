@@ -149,8 +149,12 @@ FLT.DUNGEON_REGISTRY["Blackmaw Hold"] = {
             pickup = "Gatekeeper Rageroar, Azshara (42.3, 20.1)",
             objective = "Bring Varrox Bleakhoof's Head to Gatekeeper Rageroar at Ursolan.",
             turnin = "Gatekeeper Rageroar, Azshara",
-            rewardItems = {
+            rewardChoice = true,
+            rewardItems = { -- the other three rings: wowtbc.gg (user 27.11.2026)
+                {260216, "Ouroboros Ring", 3},
+                {260217, "Eagle's Head Signet", 3},
                 {260218, "Malefactor's End", 3},
+                {260219, "Engraved Band", 3},
             },
             rewardSummary = "13,200 XP · +150 Timbermaw Hold",
         },

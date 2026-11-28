@@ -1,4 +1,6 @@
 local _, FLT = ...
+-- a readable text from the game or nil (FLT.Str in Core.lua; the same here for the mock tests, no extra local)
+FLT.Str = FLT.Str or function(v) if type(v) ~= "string" or (issecretvalue and issecretvalue(v)) then return nil end return v end
 
 -- Quality of Life: small automations and tooltip additions. Every feature has
 -- its own switch in the Quality of Life tab. The default (on/off) is decided by
@@ -601,9 +603,9 @@ local function thanksSettle() settleUntil = now() + THANKS_SETTLE end
 local function inMyGroup(guid)
   if not guid or not UnitGUID then return false end
   if IsInRaid and IsInRaid() then
-    for i = 1, 40 do if UnitGUID("raid" .. i) == guid then return true end end
+    for i = 1, 40 do if FLT.Str(UnitGUID("raid" .. i)) == guid then return true end end
   elseif IsInGroup and IsInGroup() then
-    for i = 1, 4 do if UnitGUID("party" .. i) == guid then return true end end
+    for i = 1, 4 do if FLT.Str(UnitGUID("party" .. i)) == guid then return true end end
   end
   return false
 end
@@ -2379,7 +2381,8 @@ do
 end
 
 local function addItemLines(tt, link)
-  if type(link) ~= "string" then return end
+  link = FLT.Str(link) -- (a protected tooltip can hand over a secret link)
+  if not link then return end
   local id = tonumber(link:match("item:(%d+)"))
   if not id then return end
   -- right under Auctionator's "Vendor" / "Auction" lines, in their look (only with Auctionator: the prices come from it)
@@ -2416,6 +2419,7 @@ end
 local function addTargetLine(tt)
   if not QoL.Get("unitTarget") or not tt or not tt.GetUnit then return end
   local _, unit = tt:GetUnit()
+  unit = FLT.Str(unit)
   if not unit then return end
   -- 6.2.10 (Discord darkgameover / olgi 15.11.: tooltips of units in the world stayed 2 s and longer): the game refreshes
   -- the tooltip while it fades out after the mouse left the unit - our Show() below stopped the fade every time
@@ -2427,8 +2431,9 @@ local function addTargetLine(tt)
   local text
   if UnitIsUnit and UnitIsUnit(tu, "player") then
     text = "|cffff4040>> " .. L["You"] .. " <<|r"
-  elseif UnitIsPlayer(tu) then
+  elseif UnitIsPlayer(tu) and not (FLT.IsSecret and FLT.IsSecret(UnitIsPlayer(tu))) then
     local _, cls = UnitClass(tu)
+    cls = FLT.Str(cls)
     local c = cls and (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS or {})[cls]
     text = c and string.format("|cff%02x%02x%02x%s|r", c.r * 255, c.g * 255, c.b * 255, name) or name
   else
@@ -2525,7 +2530,9 @@ local function shortenTooltip(tt)
   for i = 2, tt:NumLines() do
     local line = _G[name .. "TextLeft" .. i]
     local text = line and line:GetText()
-    if text and (text:find(SHORT.equip) or text:find(SHORT.ench)) then
+    -- a "secret" line (6.2.18, Discord marty_manhattan 25.11.: "attempt to index local 'text' (a secret string value)" with
+    -- AllTheThings on bag items) stays as it is
+    if text and not FLT.IsSecret(text) and (text:find(SHORT.equip) or text:find(SHORT.ench)) then
       local out = shortStat(text)
       if out then line:SetText(out); changed = true end
     end
@@ -2538,7 +2545,7 @@ QoL.ShortStat = shortStat -- mock tests
 local function addQuestLines(tt)
   if not QoL.Get("npcQuestTip") or not (FLT.MapQuests and FLT.MapQuests.AddUnitLines) or not tt.GetUnit then return end
   local _, unit = tt:GetUnit()
-  FLT.MapQuests.AddUnitLines(tt, unit)
+  FLT.MapQuests.AddUnitLines(tt, FLT.Str(unit))
 end
 -- Tooltip at the mouse (6.2.7-beta15, user 13.11.: "eine option damit der tool tip an der maus geankert werden kann ...
 -- top mit jeweils left center right und das gleiche mit bottom ... in dungeon, raids nicht aktiv und auf pvp schlachtfeldern,
@@ -3105,8 +3112,9 @@ local function remainingLoot()
   for i = 1, GetNumLootItems() or 0 do
     local isItem = (not GetLootSlotType) or GetLootSlotType(i) == (LOOT_SLOT_ITEM or 1)
     if isItem and LootSlotHasItem(i) then
-      local link = GetLootSlotLink and GetLootSlotLink(i)
+      local link = GetLootSlotLink and FLT.Str((GetLootSlotLink(i)))
       local icon, name, qty, _, quality, _, isQuest, questID = GetLootSlotInfo(i)
+      if FLT.IsSecret and FLT.IsSecret(icon, name, qty, quality, isQuest, questID) then icon, name, qty, quality, isQuest, questID = nil, nil, 1, 1, nil, nil end
       local value = link and sellPrice(link) * (qty or 1) or 0
       out[#out + 1] = { slot = i, link = link, name = name, qty = qty or 1, icon = icon, quality = quality or 1,
         value = value, quest = (isQuest or questID) and true or false,

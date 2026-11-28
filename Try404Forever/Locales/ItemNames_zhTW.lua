@@ -2,6 +2,8 @@ local _, FLT = ...
 -- QuestieDB Forever localized item names, GPL-3; see THIRD_PARTY_LICENSES.txt.
 FLT.ITEM_NAME_LOCALES = FLT.ITEM_NAME_LOCALES or {}
 FLT.ITEM_NAME_LOCALES.zhTW = function() return {
+[274490]="半人馬暖蹄鞋",
+[274491]="圖樣：半人馬暖蹄鞋",
 [1002]="秘典：次級隱形術",
 [1004]="秘典：冰鏈術 II",
 [1006]="黃銅項圈",

@@ -162,7 +162,10 @@ end
 -- unit cost of an item for the plan: owned share free (cover[id] 0..1), else the cheaper of buying and crafting it
 local function makeCoster(prof, list, avail, cover)
   local byItem = {}
-  for _, r in ipairs(list) do if r.i and avail[r] then byItem[r.i] = byItem[r.i] or r end end
+  -- a recipe with days between crafts (FLT.CRAFT_COOLDOWN: Mooncloth, Transmutes ...) is no way to make a material - it is bought
+  -- (6.2.18, Discord sleaker 25.11.: Mooncloth Leggings cost 8g with Mooncloth counted at its Felcloth price)
+  local cd = FLT.CRAFT_COOLDOWN or {}
+  for _, r in ipairs(list) do if r.i and avail[r] and not cd[r.s] then byItem[r.i] = byItem[r.i] or r end end
   local memo, busy = {}, {}
   local function unit(id)
     if memo[id] then return memo[id] end
@@ -736,6 +739,20 @@ function SU.RecipeTrainers(prof, spell)
   end
   return #out > 0 and out or nil
 end
+-- which ranks a trainer teaches (1 Apprentice, 2 Journeyman, 4 Expert, 8 Artisan): seen at that trainer in game
+-- (OneForAllDB.trainerRanks, 6.2.18-beta13) > Data/ProfessionFees.lua > the title ("Junior ..." = Apprentice only, "Master" =
+-- all); second value true = only guessed (no data, no title rule)
+function SU.TrainerMask(prof, t)
+  local seen = type(OneForAllDB) == "table" and type(OneForAllDB.trainerRanks) == "table" and OneForAllDB.trainerRanks[t[1]]
+  if type(seen) == "number" and seen > 0 then return seen, false end
+  local f = FLT.PROFESSION_FEES and FLT.PROFESSION_FEES[prof]
+  local m = f and ((f.trainers and f.trainers[t[1]]) or (f.trainerNames and f.trainerNames[t[2]]))
+  if m then return m, false end
+  local title = t[3] or ""
+  if title:find("Junior", 1, true) then return 1, false end
+  if title:find("Master", 1, true) then return 15, false end
+  return 1, true -- Forever's own trainers: Apprentice only until seen
+end
 -- the nearest trainer that teaches a rank (Data/ProfessionFees.lua trainers; NPCs without data by their title)
 function SU.TrainersFor(prof, rankName)
   local f = FLT.PROFESSION_FEES and FLT.PROFESSION_FEES[prof]
@@ -755,8 +772,7 @@ function SU.TrainersFor(prof, rankName)
   for _, t in ipairs(FLT.PROFESSION_TRAINERS and FLT.PROFESSION_TRAINERS[prof] or {}) do
     local side = t[4]
     if not fac or side == "AH" or side == fac then
-      local m = f and f.trainers and f.trainers[t[1]]
-      if not m then m = (t[3] or ""):find("Master") and 15 or 1 end -- Forever's own trainers: Apprentice only until seen
+      local m = SU.TrainerMask(prof, t)
       if math.floor(m / bit) % 2 == 1 then out[#out + 1] = t end
     end
   end

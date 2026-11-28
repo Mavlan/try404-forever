@@ -108,6 +108,33 @@ FLT.DUNGEON_REGISTRY["Alcaz Prison"] = {
             },
             rewardSummary = "11,550 XP · +100 Ironforge · +100 Stormwind",
         },
+        {
+            level = 53,
+            id = 96369,
+            name = "Bad News for Folkar",
+            requires = 48,
+            faction = "Horde",
+            objective = "Report back to Commander Folkar.",
+            note = "Follow-up of The Honor of the Kor'kron.",
+            rewardItems = {
+            },
+        },
+        {
+            level = 53,
+            id = 95483,
+            name = "Thrall Needs to Know",
+            requires = 48,
+            faction = "Horde",
+            objective = "Bring word of Varian Wrynn's fate to Thrall in Orgrimmar.",
+            note = "Follow-up of Bad News for Folkar.",
+            turnin = "Thrall, Orgrimmar",
+            rewardChoice = true,
+            rewardItems = {
+                {279474, "Dustwallow Dirk", 3},
+                {279831, "Fatebound Buckler", 3},
+                {279833, "Courier's Clasp", 3},
+            },
+        },
     },
     bosses = {
         {

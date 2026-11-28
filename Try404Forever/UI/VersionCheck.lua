@@ -136,7 +136,7 @@ ev:SetScript("OnEvent", function(_, event, prefix, msg, channel, sender)
     end
   elseif event == "GROUP_ROSTER_UPDATE" or event == "GUILD_ROSTER_UPDATE" then
     scheduleCheck()
-  elseif event == "CHAT_MSG_ADDON" and prefix == PREFIX and type(msg) == "string" then
+  elseif event == "CHAT_MSG_ADDON" and not (FLT.IsSecret and FLT.IsSecret(prefix, msg, channel) ) and prefix == PREFIX and type(msg) == "string" then
     local kind, v = msg:match("^(%a)\t(.+)$")
     if not kind then return end
     local trusted = channel == "GUILD" or channel == "PARTY" or channel == "RAID"

@@ -911,16 +911,33 @@ local function showLoot(btn)
       if not ib then
         ib = popSlot(lootPop)
         ib.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+        -- 6.2.18-beta9 (user 27.11.2026: "im loot anzeigen ... per rechtsklick ... der wishlist direkt hinzufuegen"): a gold star
+        -- on wishlist items, right-click on gear adds / removes it (right-click elsewhere still closes the window)
+        ib.star = ib:CreateTexture(nil, "OVERLAY", nil, 7); ib.star:SetSize(12, 12); ib.star:SetPoint("TOPRIGHT", 3, 3)
+        FLT.SetTex(ib.star, UI.ASSET_ROOT .. "icon_star"); ib.star:SetVertexColor(FLT.SkinC(1, 0.82, 0.25))
+        ib:RegisterForClicks("LeftButtonUp", "RightButtonUp")
         ib:SetScript("OnEnter", function(self)
           GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
           if GameTooltip.SetItemByID then GameTooltip:SetItemByID(self.id) else GameTooltip:SetHyperlink("item:" .. self.id) end
+          if FLT.IsGearItem and FLT.IsGearItem(self.id) and FLT.ToggleWishlist then
+            GameTooltip:AddLine(L[FLT.IsOnWishlist(self.id) and N"Right-click: remove from wishlist" or N"Right-click: add to wishlist"], 0.6, 0.8, 1)
+          end
           GameTooltip:Show()
         end)
-        ib:SetScript("OnClick", function(self) if IsModifiedClick and IsModifiedClick() and HandleModifiedItemClick then
+        ib:SetScript("OnClick", function(self, button)
+          if button == "RightButton" then
+            if FLT.IsGearItem and FLT.IsGearItem(self.id) and FLT.ToggleWishlist then
+              FLT.ToggleWishlist(self.id); self.star:SetShown(FLT.IsOnWishlist(self.id))
+              if GameTooltip:IsOwned(self) then self:GetScript("OnEnter")(self) end
+            else GameTooltip:Hide(); lootPop:Hide() end
+            return
+          end
+          if IsModifiedClick and IsModifiedClick() and HandleModifiedItemClick then
           local link = GetItemInfo and select(2, GetItemInfo(self.id)); if link then HandleModifiedItemClick(link) end end end)
         lootPop.items[n] = ib
       end
       ib.id = id
+      ib.star:SetShown(FLT.IsOnWishlist and FLT.IsOnWishlist(id) or false)
       slotPoint(ib, n)
       ib.icon:SetTexture((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(id)) or "Interface\\Icons\\INV_Misc_QuestionMark")
       local up = false
@@ -964,6 +981,10 @@ local function showLoot(btn)
   return n
 end
 RT._showLoot = showLoot -- tests
+-- the wishlist changed (FLT.ToggleWishlist): the boss rows show their stars anew
+function RT.WishChanged()
+  if frame and frame:IsShown() then RT.Paint(true) end
+end
 function RT._pops() return lootPop, markPop end -- tests
 
 -- the raid marks (6.2.17-beta24, user 25.11.: "eine leiste ... mit markern, die man dann gleich setzen kann ... beim setzen oder
@@ -1464,7 +1485,8 @@ local function bossButton(i)
   bb.name:SetWordWrap(false)
   bb.time = FLT.NewFS(bb, nil, "OVERLAY", "GameFontHighlightSmall"); bb.time:SetPoint("RIGHT", -8, 0); bb.time:SetTextColor(FLT.TextC(0.35, 0.85, 0.40))
   bb.up = bb:CreateTexture(nil, "OVERLAY"); bb.up:SetSize(11, 11); bb.up:SetPoint("RIGHT", -9, 0); FLT.SetTex(bb.up, UI.ASSET_ROOT .. "tri_up")
-  bb.star = bb:CreateTexture(nil, "OVERLAY"); bb.star:SetSize(12, 12); FLT.SetTex(bb.star, UI.ASSET_ROOT .. "icon_star")
+  bb.star = bb:CreateTexture(nil, "OVERLAY"); bb.star:SetSize(13, 13); FLT.SetTex(bb.star, UI.ASSET_ROOT .. "icon_star")
+  bb.star:SetVertexColor(FLT.SkinC(1, 0.82, 0.25)) -- gold like the wishlist star everywhere else (6.2.18-beta9; it was white)
   bb.quest = bb:CreateTexture(nil, "OVERLAY"); bb.quest:SetSize(14, 14); bb.quest:SetTexture("Interface\\GossipFrame\\AvailableQuestIcon")
   bb:SetScript("OnEnter", bossTip); bb:SetScript("OnLeave", function() GameTooltip:Hide() end)
   bb:SetScript("OnClick", function(self, button)

@@ -1,4 +1,5 @@
 local _, FLT = ...
+FLT.DOT = FLT.DOT or "·" -- separator dot (Locales/Locale.lua; another one on Russian clients)
 local function N(s) return s end -- marks an English text translated where it is shown (tools/locale/extract.py)
 local L = FLT.L or setmetatable({}, { __index = function(_, k) return k end }) -- (tests without Locales)
 local unpack = unpack or table.unpack
@@ -835,7 +836,6 @@ local function createDungeonPanel(parent)
     for k,b in pairs(viewBtn) do b:SetScript("OnClick",function() browse._setView(k) end) end
     viewBtn.history,ny=UI.NavEntry(nav,ny,L["History"],"Interface\\Icons\\INV_Misc_Book_09")
     viewBtn.history:SetScript("OnClick",function() browse._showHistory() end)
-    do local m=UI.NewMark(viewBtn.history,string.format(L["New in OneForAll %s."],"6.2.14")); m:SetPoint("RIGHT",-8,0) end -- TODO.md "Neu-Markierungen"
     ny=UI.NavSeparator(nav,ny)
     local jump={}
     for i=1,math.max(#BRACKETS,#RAID_BRACKETS) do
@@ -1128,13 +1128,13 @@ local function createDungeonPanel(parent)
   -- "Two-Hand · Axe": the slot from our data, else from the client once it knows the item
   local function itemSlotLine(rec)
     local sl=type(rec.slot)=="string" and rec.slot or nil
-    if sl then return ((FLT.SlotText and FLT.SlotText(sl) or sl):gsub(",%s*"," · ")) end
+    if sl then return ((FLT.SlotText and FLT.SlotText(sl) or sl):gsub(",%s*"," " .. FLT.DOT .. " ")) end
     if rec.id and C_Item and C_Item.GetItemInfoInstant then
       local ok,_,_,sub,loc=pcall(C_Item.GetItemInfoInstant,rec.id)
       if ok then
         local where=loc and loc~="" and _G[loc] or nil
         if sub then sub=sub:gsub("^Two%-Handed ",""):gsub("^One%-Handed ","") end -- "Two-Hand · Axes", not "Two-Hand · Two-Handed Axes"
-        if where and sub and sub~="" and sub~=where then return where.." · "..sub end
+        if where and sub and sub~="" and sub~=where then return where.." " .. FLT.DOT .. " "..sub end
         return where or sub or ""
       end
     end
@@ -2008,7 +2008,7 @@ local function createDungeonPanel(parent)
         end
         ry=ry-30
         if #rest>0 then
-          local t=dtext(rchild,"GameFontHighlightSmall"); t:SetPoint("TOPLEFT",18,ry); t:SetWidth(420+DW); t:SetJustifyH("LEFT"); t:SetText(table.concat(rest," · ")); ink(t,INK.dim)
+          local t=dtext(rchild,"GameFontHighlightSmall"); t:SetPoint("TOPLEFT",18,ry); t:SetWidth(420+DW); t:SetJustifyH("LEFT"); t:SetText(table.concat(rest," " .. FLT.DOT .. " ")); ink(t,INK.dim)
           ry=ry-math.max(14,t:GetStringHeight() or 14)-6
         end
       end
